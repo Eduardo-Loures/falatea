@@ -1,0 +1,34 @@
+name: projeto
+description: A sample command-line application with basic argument parsing.
+version: 0.0.1
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ">=3.7.2 <4.0.0"
+
+# Add regular dependencies here.
+dependencies:
+  google_fonts: ^6.2.1
+  args: ^2.5.0
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.2  # Ou a versão mais recente
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.24.0
+  flutter:
+    sdk: flutter
+  flutter_tts: ^4.2.2  # ou a versão mais recente disponível
+  image_picker: ^1.0.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/imagens/
+
+  fonts:
+    - family: WDXLLubrifontTC-Regular
+      fonts:
+        - asset: assets/fonts/WDXLLubrifontTC-Regular.ttf
