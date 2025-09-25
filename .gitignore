@@ -1,3 +1,9 @@
 # https://dart.dev/guides/libraries/private-files
 # Created by `dart pub`
 .dart_tool/
+# Flutter / Android build
+/build/
+/android/app/build/
+/ios/Pods/
+/*.apk
+
