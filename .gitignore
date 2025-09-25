@@ -1,25 +1,66 @@
-# Flutter/Dart
+# ========================================
+# Flutter / Dart
+# ========================================
 .dart_tool/
 .packages
 .pub/
 build/
+flutter_*.png
 
+# Arquivos de dependências do pub
+pubspec.lock
+
+# ========================================
 # Android
+# ========================================
 /android/.gradle/
 /android/app/build/
 /android/local.properties
+/android/.idea/
+/android/captures/
+/android/gradle.properties
 
+# ========================================
 # iOS
+# ========================================
 /ios/Pods/
+/ios/.symlinks/
 /ios/Flutter/Flutter.framework/
 /ios/Flutter/Flutter.podspec
 /ios/Flutter/Generated.xcconfig
-/ios/Flutter/App.framework
+/ios/Flutter/ephemeral/
+/ios/.idea/
+/ios/Runner.xcworkspace/
 
+# ========================================
 # Arquivos gerados
+# ========================================
 *.log
 *.lock
 *.apk
 *.aab
 *.ipa
+
+# ========================================
+# IDEs e Configurações Locais
+# ========================================
+.vscode/
+/.idea/
+/*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# ========================================
+# Outras
+# ========================================
+/coverage/
+*.DS_Store
+*.class
+*.jar
+*.keystore
+*.jks
+*.so
+
 
