@@ -1,18 +1,24 @@
 // FalaTEA - Aplicativo de Comunicação Aumentativa e Alternativa
 
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:projeto/services/auth_services.dart';
+import 'package:projeto/widgets/auth_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'package:provider/provider.dart';
+
 
 // CONFIGURAÇÃO INICIAL E MAIN
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   // Configura orientações permitidas do dispositivo
   SystemChrome.setPreferredOrientations([
@@ -20,8 +26,17 @@ void main() {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]).then((_) {
-    runApp(FalaTEA());
-  });
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => AuthService()),
+        ],
+        child: FalaTEA(),
+      ),
+    );
+  }
+  );
 }
 
 // WIDGET RAIZ DA APLICAÇÃO
@@ -36,7 +51,7 @@ class FalaTEA extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       debugShowCheckedModeBanner: false,
-      home: TelaInicial(),
+      home: AuthCheck(),
     );
   }
 }
@@ -535,9 +550,52 @@ class _TelaInicialState extends State<TelaInicial> with SingleTickerProviderStat
                     SnackBar(content: Text('Dados limpos com sucesso!')),
                   );
                 }
+              } else if (value == 'logout') {
+                // Confirma antes de fazer logout
+                bool? confirmar = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Sair'),
+                    content: Text('Deseja realmente sair da sua conta?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text('Cancelar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        child: Text('Sair'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmar == true) {
+                  try {
+                    await context.read<AuthService>().logout();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Logout realizado com sucesso!')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erro ao fazer logout: $e')),
+                    );
+                  }
+                }
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.orange),
+                    SizedBox(width: 8),
+                    Text('Sair'),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'limpar_dados',
                 child: Row(
@@ -735,7 +793,7 @@ class BotaoAAC {
       'label': label,
       'iconCodePoint': icon?.codePoint,
       'imagePath': imagePath,
-      'colorValue': color.value,
+      'colorValue': color,
       'isFixo': isFixo,
     };
   }
