@@ -13,12 +13,13 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^2.2.2  # Ou a versão mais recente
+  firebase_core: "^3.6.0"
+  firebase_auth: "^5.3.1"
+  provider: ^6.1.2
 
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.24.0
-  flutter:
-    sdk: flutter
   flutter_tts: ^4.2.2  # ou a versão mais recente disponível
   image_picker: ^1.0.4
 

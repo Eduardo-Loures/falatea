@@ -1,32 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:projeto/pages/home_page.dart';
-import 'package:projeto/pages/login_page.dart';
-import 'package:projeto/pages/splash_page.dart';
-import 'package:projeto/services/auth_services.dart';
-import 'package:provider/provider.dart';
 
-class AuthCheck extends StatefulWidget {
-  const AuthCheck({Key? key}) : super(key: key);
+/// Tela de carregamento inicial do aplicativo
+class SplashPage extends StatelessWidget {
+  const SplashPage({Key? key}) : super(key: key);
 
-  @override
-  _AuthCheckState createState() => _AuthCheckState();
-}
-
-class _AuthCheckState extends State<AuthCheck> {
   @override
   Widget build(BuildContext context) {
-    AuthService auth = Provider.of<AuthService>(context);
-
-    if (auth.isLoading) {
-      return _buildLoading();
-    } else if (auth.usuario == null) {
-      return const LoginPage();
-    } else {
-      return const HomePage();
-    }
-  }
-
-  Widget _buildLoading() {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -73,7 +52,7 @@ class _AuthCheckState extends State<AuthCheck> {
               ),
               const SizedBox(height: 20),
 
-              // Texto
+              // Nome do app
               Text(
                 'FalaTEA',
                 style: TextStyle(
@@ -84,6 +63,8 @@ class _AuthCheckState extends State<AuthCheck> {
                 ),
               ),
               const SizedBox(height: 8),
+
+              // Subtítulo
               Text(
                 'Carregando...',
                 style: TextStyle(

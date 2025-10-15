@@ -19,6 +19,7 @@ pubspec.lock
 /android/.idea/
 /android/captures/
 /android/gradle.properties
+/android/app/google-services.json
 
 # ========================================
 # iOS
