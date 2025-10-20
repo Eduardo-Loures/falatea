@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:projeto/models/botao_aac_model.dart';
+import 'package:projeto/pages/configuracoes_page.dart';
+import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/services/auth_services.dart';
+import 'package:projeto/services/perfil_service.dart';
+import 'package:projeto/services/tts_service.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-import 'dart:convert';
 
 /// Tela principal que gerencia as categorias e botões de comunicação
 class HomePage extends StatefulWidget {
@@ -18,7 +19,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   // VARIÁVEIS DE ESTADO E CONTROLADORES
-  final FlutterTts tts = FlutterTts();
   late TabController tabController;
   Orientation? _currentOrientation;
   final ScrollController _scrollController = ScrollController();
@@ -63,7 +63,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     tabController = TabController(length: categorias.length, vsync: this);
-    _inicializarTTS();
     _carregarConfigsSalvas();
 
     for (String categoria in categorias.keys) {
@@ -85,33 +84,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void dispose() {
     tabController.dispose();
     _scrollController.dispose();
-    tts.stop();
     super.dispose();
-  }
-
-  // CONFIGURAÇÃO DO SINTETIZADOR DE VOZ
-  Future<void> _inicializarTTS() async {
-    await tts.setLanguage('pt-BR');
-    await tts.setSpeechRate(0.5);
-    await tts.setVolume(1.0);
-    await tts.setPitch(1.0);
   }
 
   // PERSISTÊNCIA DE DADOS
   Future<void> _salvarBotoesPersonalizados() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      Map<String, List<Map<String, dynamic>>> botoesPersonalizados = {};
-
-      categorias.forEach((categoria, botoes) {
-        List<BotaoAAC> botoesNaoFixos = botoes.where((botao) => !botao.isFixo).toList();
-        if (botoesNaoFixos.isNotEmpty) {
-          botoesPersonalizados[categoria] = botoesNaoFixos.map((botao) => botao.toJson()).toList();
-        }
-      });
-
-      String jsonString = json.encode(botoesPersonalizados);
-      await prefs.setString('botoes_personalizados', jsonString);
+      final perfilService = context.read<PerfilService>();
+      await perfilService.salvarBotoesPerfilAtivo(categorias);
       print('Botões personalizados salvos com sucesso!');
     } catch (e) {
       print('Erro ao salvar botões personalizados: $e');
@@ -120,32 +100,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Future<void> _carregarConfigsSalvas() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      String? jsonString = prefs.getString('botoes_personalizados');
+      final perfilService = context.read<PerfilService>();
+      final botoesPersonalizados = perfilService.getBotoesPerfilAtivo();
 
-      if (jsonString != null && jsonString.isNotEmpty) {
-        Map<String, dynamic> dadosSalvos = json.decode(jsonString);
+      botoesPersonalizados.forEach((categoria, botoes) {
+        if (categorias.containsKey(categoria)) {
+          categorias[categoria]!.addAll(botoes);
+        }
+      });
 
-        dadosSalvos.forEach((categoria, botoesList) {
-          if (categorias.containsKey(categoria)) {
-            List<BotaoAAC> botoesPersonalizados =
-            (botoesList as List).map((botaoJson) => BotaoAAC.fromJson(botaoJson)).toList();
-            categorias[categoria]!.addAll(botoesPersonalizados);
-          }
-        });
-
-        if (mounted) setState(() {});
-        print('Botões personalizados carregados com sucesso!');
-      }
+      if (mounted) setState(() {});
+      print('Botões personalizados carregados com sucesso!');
     } catch (e) {
       print('Erro ao carregar botões personalizados: $e');
     }
   }
 
   Future<void> _limparDadosSalvos() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('botoes_personalizados');
-    print('Dados salvos limpos!');
+    final perfilService = context.read<PerfilService>();
+    await perfilService.salvarBotoesPerfilAtivo({});
+    print('Dados do perfil atual limpos!');
   }
 
   // NAVEGAÇÃO E SCROLL
@@ -171,7 +145,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     setState(() {
       _textoFalado = palavra;
     });
-    tts.speak(palavra);
+    context.read<TtsService>().falar(palavra);
   }
 
   void _limparTexto() {
@@ -244,7 +218,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Criar novo botão'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.indigo[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(width: 34),
+                  const Text('Criar novo botão'),
+                ],
+              ),
               content: SingleChildScrollView(
                 child: SizedBox(
                   width: orientation == Orientation.portrait
@@ -255,18 +244,47 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     children: [
                       TextField(
                         controller: labelController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Texto do botão',
-                          border: OutlineInputBorder(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: const Icon(Icons.text_fields),
+                          filled: true,
+                          fillColor: Colors.grey[50],
                         ),
+                        textCapitalization: TextCapitalization.sentences,
                       ),
+                      const SizedBox(height: 20),
+                      const Divider(),
                       const SizedBox(height: 16),
-                      const Text('Selecione uma categoria:'),
-                      DropdownButton<String>(
+                      Row(
+                        children: [
+                          Icon(Icons.category, size: 20, color: Colors.indigo[700]),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Categoria:',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
                         value: categoriaSelecionada,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
                         isExpanded: true,
                         items: categorias.keys
-                            .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                            .map((cat) => DropdownMenuItem(
+                          value: cat,
+                          child: Text(cat, style: const TextStyle(fontSize: 15)),
+                        ))
                             .toList(),
                         onChanged: (String? valor) {
                           setDialogState(() {
@@ -274,9 +292,21 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           });
                         },
                       ),
+                      const SizedBox(height: 20),
+                      const Divider(),
                       const SizedBox(height: 16),
-                      const Text('Escolha uma imagem (opcional):'),
-                      ElevatedButton.icon(
+                      Row(
+                        children: [
+                          Icon(Icons.image, size: 20, color: Colors.indigo[700]),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Imagem (Opcional):',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
                         onPressed: () async {
                           final picker = ImagePicker();
                           final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -286,44 +316,175 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             });
                           }
                         },
-                        icon: const Icon(Icons.image),
-                        label: const Text("Escolher imagem"),
+                        icon: const Icon(Icons.add_photo_alternate),
+                        label: Text(imagemSelecionada == null ? 'Procure na galeria' : 'Trocar Imagem'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.indigo[700],
+                          side: BorderSide(color: Colors.indigo[300]!),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        ),
                       ),
                       if (imagemSelecionada != null)
                         Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Image.file(File(imagemSelecionada!), height: 80),
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    File(imagemSelecionada!),
+                                    height: 60,
+                                    width: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Imagem selecionada',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 20),
+                                  onPressed: () {
+                                    setDialogState(() {
+                                      imagemSelecionada = null;
+                                    });
+                                  },
+                                  tooltip: 'Remover',
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      const Text('Selecione um ícone:'),
-                      DropdownButton<IconData>(
-                        value: iconSelecionado,
-                        items: [
-                          Icons.star, Icons.favorite, Icons.face, Icons.cake,
-                          Icons.home, Icons.pets, Icons.school, Icons.accessibility,
-                          Icons.bathroom, Icons.directions_car, Icons.music_note, Icons.smartphone,
-                        ].map((icon) => DropdownMenuItem(value: icon, child: Icon(icon))).toList(),
-                        onChanged: (IconData? valor) {
-                          setDialogState(() {
-                            iconSelecionado = valor ?? Icons.star;
-                          });
-                        },
-                      ),
+                      const SizedBox(height: 20),
+                      const Divider(),
                       const SizedBox(height: 16),
-                      const Text('Selecione uma cor:'),
-                      DropdownButton<Color>(
-                        value: corSelecionada,
-                        items: [
-                          Colors.orange, Colors.blue, Colors.teal, Colors.lightGreen,
-                          Colors.red, Colors.amber, Colors.pink, Colors.cyan, Colors.lime,
-                        ].map((color) => DropdownMenuItem(
-                          value: color,
-                          child: Container(width: 50, height: 20, color: color),
-                        )).toList(),
-                        onChanged: (Color? valor) {
-                          setDialogState(() {
-                            corSelecionada = valor ?? Colors.orange;
-                          });
-                        },
+                      Row(
+                        children: [
+                          Icon(Icons.star, size: 20, color: Colors.indigo[700]),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Ícone:',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            Icons.star, Icons.favorite, Icons.face, Icons.cake,
+                            Icons.home, Icons.pets, Icons.school, Icons.accessibility,
+                            Icons.bathroom, Icons.directions_car, Icons.music_note, Icons.smartphone,
+                          ].map((icon) {
+                            final isSelected = icon == iconSelecionado;
+                            return InkWell(
+                              onTap: () {
+                                setDialogState(() {
+                                  iconSelecionado = icon;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.indigo[100] : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isSelected ? Colors.indigo[700]! : Colors.grey[300]!,
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                ),
+                                child: Icon(
+                                  icon,
+                                  size: 28,
+                                  color: isSelected ? Colors.indigo[700] : Colors.grey[600],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Icon(Icons.palette, size: 20, color: Colors.indigo[700]),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Cor do Botão:',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            Colors.orange, Colors.blue, Colors.teal, Colors.lightGreen,
+                            Colors.red, Colors.amber, Colors.pink, Colors.cyan, Colors.lime,
+                          ].map((cor) {
+                            final isSelected = cor == corSelecionada;
+                            return InkWell(
+                              onTap: () {
+                                setDialogState(() {
+                                  corSelecionada = cor;
+                                });
+                              },
+                              child: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: cor,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isSelected ? Colors.black : Colors.white,
+                                    width: isSelected ? 3 : 2,
+                                  ),
+                                  boxShadow: [
+                                    if (isSelected)
+                                      BoxShadow(
+                                        color: cor.withOpacity(0.4),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      ),
+                                  ],
+                                ),
+                                child: isSelected
+                                    ? const Icon(Icons.check, color: Colors.white, size: 24)
+                                    : null,
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ],
                   ),
@@ -334,27 +495,51 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancelar'),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: () async {
-                    if (labelController.text.isNotEmpty) {
-                      setState(() {
-                        categorias[categoriaSelecionada]!.add(
-                          BotaoAAC(
-                            labelController.text,
-                            imagemSelecionada == null ? iconSelecionado : null,
-                            corSelecionada,
-                            imagePath: imagemSelecionada,
-                          ),
-                        );
-                      });
-                      await _salvarBotoesPersonalizados();
+                    if (labelController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Botão criado com sucesso!')),
+                        const SnackBar(
+                          content: Text('Digite o texto do botão'),
+                          backgroundColor: Colors.red,
+                        ),
                       );
+                      return;
                     }
+
+                    setState(() {
+                      categorias[categoriaSelecionada]!.add(
+                        BotaoAAC(
+                          labelController.text.trim(),
+                          imagemSelecionada == null ? iconSelecionado : null,
+                          corSelecionada,
+                          imagePath: imagemSelecionada,
+                        ),
+                      );
+                    });
+                    await _salvarBotoesPersonalizados();
                     Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text('Botão "${labelController.text.trim()}" criado!'),
+                          ],
+                        ),
+                        backgroundColor: Colors.green[700],
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
                   },
-                  child: const Text('Adicionar'),
+                  label: const Text('Criar Botão'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo[700],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
                 )
               ],
             );
@@ -364,215 +549,296 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  // CONSTRUÇÃO DA INTERFACE
   @override
   Widget build(BuildContext context) {
     _currentOrientation = MediaQuery.of(context).orientation;
     int crossAxisCount = _currentOrientation == Orientation.portrait ? 3 : 5;
 
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          'FalaTEA',
-          style: TextStyle(
-            fontFamily: 'WDXLLubrifontTC-Regular',
-            fontSize: _currentOrientation == Orientation.portrait ? 30 : 20,
-          ),
-        ),
-        elevation: 2.0,
-        toolbarHeight: _currentOrientation == Orientation.portrait ? 56 : 36,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value == 'limpar_dados') {
-                bool? confirmar = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Limpar Dados'),
-                    content: const Text('Isso removerá todos os botões personalizados. Deseja continuar?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancelar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        child: const Text('Limpar'),
-                      ),
-                    ],
-                  ),
-                );
+    return Consumer<PerfilService>(
+      builder: (context, perfilService, child) {
+        final perfilAtivo = perfilService.perfilAtivo;
 
-                if (confirmar == true) {
-                  await _limparDadosSalvos();
-                  setState(() {
-                    categorias.forEach((categoria, botoes) {
-                      botoes.removeWhere((botao) => !botao.isFixo);
-                    });
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Dados limpos com sucesso!')),
-                  );
-                }
-              } else if (value == 'logout') {
-                bool? confirmar = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Sair'),
-                    content: const Text('Deseja realmente sair da sua conta?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancelar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        child: const Text('Sair'),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (confirmar == true) {
-                  try {
-                    await context.read<AuthService>().logout();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logout realizado com sucesso!')),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Erro ao fazer logout: $e')),
-                    );
-                  }
-                }
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Text('Sair'),
-                  ],
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.indigo[800]!, Colors.indigo[600]!],
                 ),
               ),
-              const PopupMenuItem(
-                value: 'limpar_dados',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_forever, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Limpar Dados'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(_currentOrientation == Orientation.portrait ? 40 : 28),
-          child: Container(
-            alignment: Alignment.bottomCenter,
-            child: TabBar(
-              controller: tabController,
-              isScrollable: true,
-              tabs: categorias.keys.map((cat) => Tab(text: cat)).toList(),
-              indicatorColor: Colors.white,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-              tabAlignment: TabAlignment.start,
             ),
-          ),
-        ),
-      ),
-      body: OrientationBuilder(
-        builder: (context, orientation) {
-          return Column(
-            children: [
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(8.0),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                decoration: BoxDecoration(
-                  color: Colors.white60,
-                  border: Border.all(color: Colors.grey[400]!),
-                  borderRadius: BorderRadius.circular(8.0),
+            foregroundColor: Colors.white,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
+                );
+              },
+              tooltip: 'Voltar para seleção',
+            ),
+            title: Column(
+              children: [
+                const Text(
+                  'FalaTEA',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _textoFalado.isEmpty ? 'Clique em um botão para falar...' : _textoFalado,
-                        style: TextStyle(
-                          fontSize: orientation == Orientation.portrait ? 18 : 16,
-                          fontWeight: FontWeight.w500,
-                          color: _textoFalado.isEmpty ? Colors.grey[600] : Colors.black87,
+                if (perfilAtivo != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          perfilAtivo.nome,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    if (_textoFalado.isNotEmpty)
-                      IconButton(
-                        onPressed: _limparTexto,
-                        icon: Icon(Icons.clear, color: Colors.grey[600]),
-                        tooltip: 'Limpar texto',
-                      ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  controller: _scrollController,
-                  padding: EdgeInsets.zero,
-                  children: [
-                    for (var categoria in categorias.keys)
-                      Column(
-                        key: _categoryKeys[categoria],
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(
-                              12.0,
-                              categoria == categorias.keys.first ? 8 : 0,
-                              12.0,
-                              8,
-                            ),
-                            child: Text(
-                              categoria,
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
+                  ),
+              ],
+            ),
+            elevation: 0,
+            actions: [
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'configuracoes') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ConfiguracoesPage()),
+                    );
+                  } else if (value == 'limpar_dados') {
+                    bool? confirmar = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Limpar Dados'),
+                        content: Text('Isso removerá todos os botões personalizados de ${perfilAtivo?.nome}. Deseja continuar?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancelar'),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: GridView.count(
-                              crossAxisCount: crossAxisCount,
-                              mainAxisSpacing: orientation == Orientation.portrait ? 10 : 6,
-                              crossAxisSpacing: orientation == Orientation.portrait ? 10 : 6,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              childAspectRatio: orientation == Orientation.portrait ? 1.0 : 1.3,
-                              children: categorias[categoria]!
-                                  .map((btn) => _buildBotaoComunicacao(btn, orientation))
-                                  .toList(),
-                            ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text('Limpar'),
                           ),
-                          const SizedBox(height: 0),
                         ],
                       ),
-                  ],
-                ),
+                    );
+
+                    if (confirmar == true) {
+                      await _limparDadosSalvos();
+                      setState(() {
+                        categorias.forEach((categoria, botoes) {
+                          botoes.removeWhere((botao) => !botao.isFixo);
+                        });
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Dados limpos com sucesso!')),
+                      );
+                    }
+                  } else if (value == 'trocar_perfil') {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
+                    );
+                  } else if (value == 'logout') {
+                    bool? confirmar = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Sair'),
+                        content: const Text('Deseja realmente sair da sua conta?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancelar'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text('Sair'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirmar == true) {
+                      try {
+                        await context.read<AuthService>().logout();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Logout realizado com sucesso!')),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Erro ao fazer logout: $e')),
+                        );
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'configuracoes',
+                    child: Row(
+                      children: [
+                        Icon(Icons.settings, color: Colors.indigo),
+                        SizedBox(width: 8),
+                        Text('Configurações'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'trocar_perfil',
+                    child: Row(
+                      children: [
+                        Icon(Icons.swap_horiz, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('Trocar Perfil'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'limpar_dados',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_forever, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Limpar Dados'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: mostrarDialogoAdicionarBotao,
-        tooltip: 'Adicionar novo botão',
-        child: const Icon(Icons.add),
-      ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(48),
+              child: Container(
+                color: Colors.white,
+                child: TabBar(
+                  controller: tabController,
+                  isScrollable: true,
+                  tabs: categorias.keys.map((cat) => Tab(
+                    text: cat,
+                    height: 48,
+                  )).toList(),
+                  indicatorColor: Colors.indigo[600],
+                  indicatorWeight: 3,
+                  labelStyle: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  tabAlignment: TabAlignment.start,
+                ),
+              ),
+            ),
+          ),
+          body: OrientationBuilder(
+            builder: (context, orientation) {
+              return Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white60,
+                      border: Border.all(color: Colors.grey[400]!),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _textoFalado.isEmpty ? 'Clique em um botão para falar...' : _textoFalado,
+                            style: TextStyle(
+                              fontSize: orientation == Orientation.portrait ? 18 : 16,
+                              fontWeight: FontWeight.w500,
+                              color: _textoFalado.isEmpty ? Colors.grey[600] : Colors.black87,
+                            ),
+                          ),
+                        ),
+                        if (_textoFalado.isNotEmpty)
+                          IconButton(
+                            onPressed: _limparTexto,
+                            icon: Icon(Icons.clear, color: Colors.grey[600]),
+                            tooltip: 'Limpar texto',
+                          ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: _scrollController,
+                      padding: EdgeInsets.zero,
+                      children: [
+                        for (var categoria in categorias.keys)
+                          Column(
+                            key: _categoryKeys[categoria],
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  12.0,
+                                  categoria == categorias.keys.first ? 8 : 0,
+                                  12.0,
+                                  8,
+                                ),
+                                child: Text(
+                                  categoria,
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: GridView.count(
+                                  crossAxisCount: crossAxisCount,
+                                  mainAxisSpacing: orientation == Orientation.portrait ? 10 : 6,
+                                  crossAxisSpacing: orientation == Orientation.portrait ? 10 : 6,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  childAspectRatio: orientation == Orientation.portrait ? 1.0 : 1.3,
+                                  children: categorias[categoria]!
+                                      .map((btn) => _buildBotaoComunicacao(btn, orientation))
+                                      .toList(),
+                                ),
+                              ),
+                              const SizedBox(height: 0),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: mostrarDialogoAdicionarBotao,
+            backgroundColor: Colors.indigo[700],
+            foregroundColor: Colors.white,
+            label: const Icon(Icons.add),
+          ),
+        );
+      },
     );
   }
 

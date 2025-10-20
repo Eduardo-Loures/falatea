@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:projeto/services/auth_services.dart';
+import 'package:projeto/services/perfil_service.dart';
+import 'package:projeto/services/tts_service.dart';
 import 'package:projeto/widgets/auth_check.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +23,8 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => AuthService()),
+          ChangeNotifierProvider(create: (context) => PerfilService()),
+          ChangeNotifierProvider(create: (context) => TtsService()),
         ],
         child: const FalaTEA(),
       ),
