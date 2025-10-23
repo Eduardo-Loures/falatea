@@ -71,7 +71,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           _buildBotaoAcao(
             icon: Icons.swap_horiz,
             titulo: 'Trocar Perfil',
-            subtitulo: 'Selecionar outro aluno',
+            subtitulo: 'Selecionar outro perfil',
             cor: Colors.blue,
             onTap: () {
               Navigator.pushReplacement(
@@ -364,20 +364,25 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           // Botão Testar Voz
           Padding(
             padding: const EdgeInsets.all(16),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                ttsService.testarVoz();
-              },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Testar Voz'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo[700],
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 45),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            child: Column(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ttsService.testarVoz();
+                  },
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('Testar Voz'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo[700],
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 45),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+              ],
             ),
           ),
         ],

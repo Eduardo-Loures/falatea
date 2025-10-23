@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Service para gerenciar configurações de Text-to-Speech
+/// Service para gerenciar configurações de Text-to-Speech (TTS)
 class TtsService extends ChangeNotifier {
   final FlutterTts _tts = FlutterTts();
 
@@ -37,11 +37,9 @@ class TtsService extends ChangeNotifier {
       _velocidadeFala = prefs.getDouble('tts_velocidade') ?? 0.5;
       _tomVoz = prefs.getDouble('tts_tom') ?? 1.0;
       _volume = prefs.getDouble('tts_volume') ?? 1.0;
-
-      print('Configurações TTS carregadas');
       notifyListeners();
     } catch (e) {
-      print('Erro ao carregar configurações TTS: $e');
+      debugPrint('Erro ao carregar configurações TTS: $e');
     }
   }
 
@@ -53,10 +51,8 @@ class TtsService extends ChangeNotifier {
       await prefs.setDouble('tts_velocidade', _velocidadeFala);
       await prefs.setDouble('tts_tom', _tomVoz);
       await prefs.setDouble('tts_volume', _volume);
-
-      print('Configurações TTS salvas');
     } catch (e) {
-      print('Erro ao salvar configurações TTS: $e');
+      debugPrint('Erro ao salvar configurações TTS: $e');
     }
   }
 
@@ -65,20 +61,29 @@ class TtsService extends ChangeNotifier {
     try {
       await _tts.setLanguage('pt-BR');
       await _tts.setSpeechRate(_velocidadeFala);
-      await _tts.setPitch(_tomVoz);
       await _tts.setVolume(_volume);
 
-      // Tenta configurar voz específica (funcionalidade limitada no Flutter TTS)
-      // No Android/iOS, a voz masculina/feminina depende das vozes instaladas
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        // Android geralmente tem vozes diferentes instaladas
-        // Exemplo: pt-br-x-ptd-local (masculina) ou pt-br-x-ptd-network (feminina)
-        // A disponibilidade depende do dispositivo
+      // Define o pitch (tom)
+      double pitchAjustado = _vozFeminina ? _tomVoz * 1.2 : _tomVoz * 0.9;
+      await _tts.setPitch(pitchAjustado);
+
+      // Define a voz específica
+      if (_vozFeminina) {
+        await _tts.setVoice({
+          "name": "pt-br-x-pte-network",
+          "locale": "pt-BR",
+        });
+      } else {
+        await _tts.setVoice({
+          "name": "pt-br-x-ptd-network",
+          "locale": "pt-BR",
+        });
       }
 
-      print('Configurações TTS aplicadas');
+      debugPrint(
+          'Configurações aplicadas → Voz: ${_vozFeminina ? "Feminina" : "Masculina"}');
     } catch (e) {
-      print('Erro ao aplicar configurações TTS: $e');
+      debugPrint('Erro ao aplicar configurações TTS: $e');
     }
   }
 
@@ -101,7 +106,7 @@ class TtsService extends ChangeNotifier {
   /// Define tom de voz
   Future<void> setTom(double tom) async {
     _tomVoz = tom.clamp(0.5, 2.0);
-    await _tts.setPitch(_tomVoz);
+    await _aplicarConfiguracoes();
     await _salvarConfiguracoes();
     notifyListeners();
   }
@@ -119,7 +124,7 @@ class TtsService extends ChangeNotifier {
     try {
       await _tts.speak(texto);
     } catch (e) {
-      print('Erro ao falar: $e');
+      debugPrint('Erro ao falar: $e');
     }
   }
 
@@ -128,15 +133,16 @@ class TtsService extends ChangeNotifier {
     try {
       await _tts.stop();
     } catch (e) {
-      print('Erro ao parar TTS: $e');
+      debugPrint('Erro ao parar TTS: $e');
     }
   }
 
   /// Testa a voz com uma frase
   Future<void> testarVoz() async {
     String textoTeste = _vozFeminina
-        ? "Olá! Eu sou a voz feminina do FalaTEA."
-        : "Olá! Eu sou a voz masculina do FalaTEA.";
+        ? "Olá! Esta é a voz feminina do FalaTEA.?"
+        : "Olá! Esta é a voz masculina do FalaTEA.";
+    await _aplicarConfiguracoes();
     await falar(textoTeste);
   }
 
@@ -146,7 +152,6 @@ class TtsService extends ChangeNotifier {
     _velocidadeFala = 0.5;
     _tomVoz = 1.0;
     _volume = 1.0;
-
     await _aplicarConfiguracoes();
     await _salvarConfiguracoes();
     notifyListeners();
