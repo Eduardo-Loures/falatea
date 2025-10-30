@@ -461,7 +461,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
   void _confirmarSair(BuildContext context, AuthService authService) {
     showDialog(
       context: context,
-      builder: (context) {
+      barrierDismissible: false, // Impede fechar clicando fora
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
@@ -476,28 +477,74 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
+                // Fecha o diálogo primeiro
+                Navigator.of(dialogContext).pop();
+
+                // Mostra loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (loadingContext) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    );
+                  },
+                );
+
                 try {
+                  // Executa o logout
                   await authService.logout();
-                  Navigator.pop(context); // Fecha diálogo
-                  // AuthCheck vai redirecionar automaticamente para LoginPage
+
+                  // delay para garantir processamento
+                  await Future.delayed(const Duration(milliseconds: 300));
+
+                  // Fecha o loading se o context ainda existir
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+
+                    // Remove TODAS as telas e vai para o login
+                    // O AuthCheck vai detectar que não está logado e mostrar a tela de login
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/',
+                          (route) => false,
+                    );
+                  }
                 } catch (e) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erro ao fazer logout: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  // Fecha o loading em caso de erro
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text('Erro ao fazer logout: $e'),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 4),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                  print('Erro no logout: $e');
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text('Sair'),
             ),

@@ -63,6 +63,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     tabController = TabController(length: categorias.length, vsync: this);
+
+    // IMPORTANTE: Limpa botões não-fixos antes de carregar
+    categorias.forEach((categoria, botoes) {
+      botoes.removeWhere((botao) => !botao.isFixo);
+    });
+
     _carregarConfigsSalvas();
 
     for (String categoria in categorias.keys) {
@@ -91,7 +97,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Future<void> _salvarBotoesPersonalizados() async {
     try {
       final perfilService = context.read<PerfilService>();
-      await perfilService.salvarBotoesPerfilAtivo(categorias);
+
+      // Cria um novo mapa contendo APENAS os botões não-fixos
+      final Map<String, List<BotaoAAC>> botoesParaSalvar = {};
+
+      categorias.forEach((categoria, botoes) {
+        final botoesNaoFixos = botoes.where((botao) => !botao.isFixo).toList();
+        if (botoesNaoFixos.isNotEmpty) {
+          botoesParaSalvar[categoria] = botoesNaoFixos;
+        }
+      });
+
+      await perfilService.salvarBotoesPerfilAtivo(botoesParaSalvar);
       print('Botões personalizados salvos com sucesso!');
     } catch (e) {
       print('Erro ao salvar botões personalizados: $e');
@@ -103,9 +120,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final perfilService = context.read<PerfilService>();
       final botoesPersonalizados = perfilService.getBotoesPerfilAtivo();
 
+      // Remove TODOS os botões não-fixos antes de carregar os novos
+      categorias.forEach((categoria, botoes) {
+        botoes.removeWhere((botao) => !botao.isFixo);
+      });
+
+      // Adiciona apenas os botões personalizados do perfil
       botoesPersonalizados.forEach((categoria, botoes) {
         if (categorias.containsKey(categoria)) {
-          categorias[categoria]!.addAll(botoes);
+          // Garante que só adiciona botões não-fixos
+          final botoesNaoFixos = botoes.where((botao) => !botao.isFixo).toList();
+          categorias[categoria]!.addAll(botoesNaoFixos);
         }
       });
 
@@ -212,6 +237,38 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     String categoriaSelecionada = categorias.keys.first;
     String? imagemSelecionada;
 
+    // Lista de ícones disponíveis
+    final Map<String, IconData> iconesDisponiveis = {
+      'Estrela': Icons.star,
+      'Coração': Icons.favorite,
+      'Rosto': Icons.face,
+      'Bolo': Icons.cake,
+      'Casa': Icons.home,
+      'Pet': Icons.pets,
+      'Escola': Icons.school,
+      'Pessoa': Icons.accessibility,
+      'Banheiro': Icons.bathroom,
+      'Carro': Icons.directions_car,
+      'Música': Icons.music_note,
+      'Celular': Icons.smartphone,
+    };
+
+    // Lista de cores disponíveis
+    final Map<String, Color> coresDisponiveis = {
+      'Laranja': Colors.orange,
+      'Azul': Colors.blue,
+      'Verde-Azulado': Colors.teal,
+      'Verde Claro': Colors.lightGreen,
+      'Vermelho': Colors.red,
+      'Amarelo': Colors.amber,
+      'Rosa': Colors.pink,
+      'Ciano': Colors.cyan,
+      'Verde-Limão': Colors.lime,
+    };
+
+    String iconeSelecionadoNome = 'Estrela';
+    String corSelecionadaNome = 'Laranja';
+
     showDialog(
       context: context,
       builder: (context) {
@@ -229,8 +286,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       color: Colors.indigo[50],
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    child: Icon(Icons.add, color: Colors.indigo[700]),
                   ),
-                  const SizedBox(width: 34),
+                  const SizedBox(width: 12),
                   const Text('Criar novo botão'),
                 ],
               ),
@@ -382,47 +440,35 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
+                      DropdownButtonFormField<String>(
+                        value: iconeSelecionadoNome,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            Icons.star, Icons.favorite, Icons.face, Icons.cake,
-                            Icons.home, Icons.pets, Icons.school, Icons.accessibility,
-                            Icons.bathroom, Icons.directions_car, Icons.music_note, Icons.smartphone,
-                          ].map((icon) {
-                            final isSelected = icon == iconSelecionado;
-                            return InkWell(
-                              onTap: () {
-                                setDialogState(() {
-                                  iconSelecionado = icon;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Colors.indigo[100] : Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isSelected ? Colors.indigo[700]! : Colors.grey[300]!,
-                                    width: isSelected ? 2 : 1,
-                                  ),
-                                ),
-                                child: Icon(
-                                  icon,
-                                  size: 28,
-                                  color: isSelected ? Colors.indigo[700] : Colors.grey[600],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                        isExpanded: true,
+                        items: iconesDisponiveis.keys
+                            .map((nome) => DropdownMenuItem(
+                          value: nome,
+                          child: Row(
+                            children: [
+                              Icon(iconesDisponiveis[nome]!, size: 20),
+                              const SizedBox(width: 12),
+                              Text(nome, style: const TextStyle(fontSize: 15)),
+                            ],
+                          ),
+                        ))
+                            .toList(),
+                        onChanged: (String? valor) {
+                          setDialogState(() {
+                            iconeSelecionadoNome = valor ?? 'Estrela';
+                            iconSelecionado = iconesDisponiveis[iconeSelecionadoNome]!;
+                          });
+                        },
                       ),
                       const SizedBox(height: 20),
                       const Divider(),
@@ -438,53 +484,48 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
+                      DropdownButtonFormField<String>(
+                        value: corSelecionadaNome,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            Colors.orange, Colors.blue, Colors.teal, Colors.lightGreen,
-                            Colors.red, Colors.amber, Colors.pink, Colors.cyan, Colors.lime,
-                          ].map((cor) {
-                            final isSelected = cor == corSelecionada;
-                            return InkWell(
-                              onTap: () {
-                                setDialogState(() {
-                                  corSelecionada = cor;
-                                });
-                              },
-                              child: Container(
-                                width: 44,
-                                height: 44,
+                        isExpanded: true,
+                        selectedItemBuilder: (BuildContext context) {
+                          return coresDisponiveis.keys.map((String nome) {
+                            return Text(nome, style: const TextStyle(fontSize: 15));
+                          }).toList();
+                        },
+                        items: coresDisponiveis.keys
+                            .map((nome) => DropdownMenuItem(
+                          value: nome,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
                                 decoration: BoxDecoration(
-                                  color: cor,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isSelected ? Colors.black : Colors.white,
-                                    width: isSelected ? 3 : 2,
-                                  ),
-                                  boxShadow: [
-                                    if (isSelected)
-                                      BoxShadow(
-                                        color: cor.withOpacity(0.4),
-                                        blurRadius: 8,
-                                        spreadRadius: 2,
-                                      ),
-                                  ],
+                                  color: coresDisponiveis[nome]!,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.grey[400]!),
                                 ),
-                                child: isSelected
-                                    ? const Icon(Icons.check, color: Colors.white, size: 24)
-                                    : null,
                               ),
-                            );
-                          }).toList(),
-                        ),
+                              const SizedBox(width: 12),
+                              Text(nome, style: const TextStyle(fontSize: 15)),
+                            ],
+                          ),
+                        ))
+                            .toList(),
+                        onChanged: (String? valor) {
+                          setDialogState(() {
+                            corSelecionadaNome = valor ?? 'Laranja';
+                            corSelecionada = coresDisponiveis[corSelecionadaNome]!;
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -534,6 +575,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       ),
                     );
                   },
+                  icon: const Icon(Icons.check),
                   label: const Text('Criar Botão'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[700],
@@ -548,7 +590,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
     );
   }
-
   // CONSTRUÇÃO DA INTERFACE
   @override
   Widget build(BuildContext context) {
