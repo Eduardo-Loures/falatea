@@ -596,12 +596,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _currentOrientation = MediaQuery.of(context).orientation;
     int crossAxisCount = _currentOrientation == Orientation.portrait ? 3 : 5;
 
+    // Verifica se está em modo paisagem
+    final isLandscape = _currentOrientation == Orientation.landscape;
+
     return Consumer<PerfilService>(
       builder: (context, perfilService, child) {
         final perfilAtivo = perfilService.perfilAtivo;
 
         return Scaffold(
           appBar: AppBar(
+            // IMPORTANTE: Reduz a altura do AppBar em landscape
+            toolbarHeight: isLandscape ? 48 : 56,
             centerTitle: true,
             flexibleSpace: Container(
               decoration: BoxDecoration(
@@ -623,7 +628,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               },
               tooltip: 'Voltar para seleção',
             ),
-            title: Column(
+            // MODIFICAÇÃO PRINCIPAL: Mostrar título apenas em portrait
+            title: isLandscape
+                ? null  // Esconde completamente em landscape
+                : Column(
               children: [
                 const Text(
                   'FalaTEA',
@@ -655,6 +663,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             elevation: 0,
             actions: [
               PopupMenuButton<String>(
+                // Ícone menor em landscape
+                iconSize: isLandscape ? 20 : 24,
                 onSelected: (value) async {
                   if (value == 'configuracoes') {
                     Navigator.push(
@@ -766,7 +776,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
             ],
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(48),
+              // Reduz altura das tabs em landscape
+              preferredSize: Size.fromHeight(isLandscape ? 40 : 48),
               child: Container(
                 color: Colors.white,
                 child: TabBar(
@@ -774,19 +785,21 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   isScrollable: true,
                   tabs: categorias.keys.map((cat) => Tab(
                     text: cat,
-                    height: 48,
+                    height: isLandscape ? 40 : 48,
                   )).toList(),
                   indicatorColor: Colors.indigo[600],
                   indicatorWeight: 3,
-                  labelStyle: const TextStyle(
-                    fontSize: 15,
+                  labelStyle: TextStyle(
+                    fontSize: isLandscape ? 14 : 15,
                     fontWeight: FontWeight.w600,
                   ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 14,
+                  unselectedLabelStyle: TextStyle(
+                    fontSize: isLandscape ? 13 : 14,
                     fontWeight: FontWeight.w400,
                   ),
-                  labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  labelPadding: EdgeInsets.symmetric(
+                    horizontal: isLandscape ? 16 : 20,
+                  ),
                   tabAlignment: TabAlignment.start,
                 ),
               ),
@@ -829,7 +842,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Expanded(
                     child: ListView(
                       controller: _scrollController,
-                      padding: EdgeInsets.zero,
+                      padding: EdgeInsets.only(
+                        bottom: 20,
+                      ),
                       children: [
                         for (var categoria in categorias.keys)
                           Column(
@@ -841,22 +856,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   12.0,
                                   categoria == categorias.keys.first ? 8 : 0,
                                   12.0,
-                                  8,
+                                  orientation == Orientation.portrait ? 8 : 6,
                                 ),
                                 child: Text(
                                   categoria,
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: orientation == Orientation.portrait ? 20 : 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: GridView.count(
                                   crossAxisCount: crossAxisCount,
-                                  mainAxisSpacing: orientation == Orientation.portrait ? 10 : 6,
-                                  crossAxisSpacing: orientation == Orientation.portrait ? 10 : 6,
+                                  mainAxisSpacing: orientation == Orientation.portrait ? 10 : 8,
+                                  crossAxisSpacing: orientation == Orientation.portrait ? 10 : 8,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  childAspectRatio: orientation == Orientation.portrait ? 1.0 : 1.3,
+                                  childAspectRatio: orientation == Orientation.portrait ? 1.0 : 1.4,
                                   children: categorias[categoria]!
                                       .map((btn) => _buildBotaoComunicacao(btn, orientation))
                                       .toList(),
@@ -872,41 +890,55 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               );
             },
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: mostrarDialogoAdicionarBotao,
-            backgroundColor: Colors.indigo[700],
-            foregroundColor: Colors.white,
-            label: const Icon(Icons.add),
-          ),
         );
       },
     );
   }
 
   Widget _buildBotaoComunicacao(BotaoAAC btn, Orientation orientation) {
-    double iconSize = orientation == Orientation.portrait ? 36 : 28;
-    double fontSize = orientation == Orientation.portrait ? 18 : 16;
+    // Ajusta tamanhos baseado na orientação
+    double iconSize = orientation == Orientation.portrait ? 36 : 32;
+    double imageSize = orientation == Orientation.portrait ? 73 : 55;
+    double fontSize = orientation == Orientation.portrait ? 18 : 14;
+    double paddingButton = orientation == Orientation.portrait ? 8 : 6;
+    double spacingIconText = orientation == Orientation.portrait ? 10 : 6;
 
     return GestureDetector(
       onLongPress: () => _mostrarDialogoExcluirBotao(btn),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: btn.color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: EdgeInsets.all(orientation == Orientation.portrait ? 8 : 6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: EdgeInsets.all(paddingButton),
           elevation: 4,
         ),
         onPressed: () => falarPalavra(btn.label),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Imagem ou Ícone
             if (btn.imagePath != null)
-              btn.imagePath!.startsWith('assets/')
-                  ? Image.asset(btn.imagePath!, height: iconSize + 37)
-                  : Image.file(File(btn.imagePath!), height: iconSize + 37)
+              Flexible(
+                child: btn.imagePath!.startsWith('assets/')
+                    ? Image.asset(
+                  btn.imagePath!,
+                  height: imageSize,
+                  fit: BoxFit.contain,
+                )
+                    : Image.file(
+                  File(btn.imagePath!),
+                  height: imageSize,
+                  fit: BoxFit.contain,
+                ),
+              )
             else
               Icon(btn.icon, size: iconSize, color: Colors.black87),
-            SizedBox(height: orientation == Orientation.portrait ? 10 : 6),
+
+            SizedBox(height: spacingIconText),
+
+            // Texto
             Text(
               btn.label,
               style: TextStyle(
@@ -915,6 +947,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 color: Colors.black87,
               ),
               textAlign: TextAlign.center,
+              maxLines: orientation == Orientation.portrait ? 2 : 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
