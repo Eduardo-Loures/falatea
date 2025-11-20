@@ -1,10 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-
-class AuthException implements Exception {
-  String message;
-  AuthException(this.message);
-}
+import 'package:flutter/material.dart';
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,6 +10,7 @@ class AuthService extends ChangeNotifier {
     _authCheck();
   }
 
+  // Monitora mudanças no estado de autenticação
   _authCheck() {
     _auth.authStateChanges().listen((User? user) {
       usuario = user;
@@ -23,77 +19,117 @@ class AuthService extends ChangeNotifier {
     });
   }
 
-  _getUser() {
-    usuario = _auth.currentUser;
-    notifyListeners();
-  }
-
-  Future<void> registrar(String email, String senha) async {
+  // MÉTODO DE LOGIN (apenas emails que já foram registrados)
+  Future<String?> login({
+    required String email,
+    required String senha,
+  }) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: senha,
-      );
-      _getUser();
-    } on FirebaseAuthException catch (e) {
-      // Mapeia TODOS os erros possíveis para português
-      switch (e.code) {
-        case 'weak-password':
-          throw AuthException('A senha é muito fraca!');
-        case 'email-already-in-use':
-          throw AuthException('Este email já está cadastrado');
-        case 'invalid-email':
-          throw AuthException('Email inválido');
-        case 'operation-not-allowed':
-          throw AuthException('Operação não permitida');
-        case 'network-request-failed':
-          throw AuthException('Erro de conexão. Verifique sua internet');
-        default:
-          throw AuthException('Erro ao cadastrar. Tente novamente');
-      }
-    } catch (e) {
-      throw AuthException('Erro desconhecido ao cadastrar');
-    }
-  }
-
-  Future<void> login(String email, String senha) async {
-    try {
+      // Remove a verificação prévia - deixa o Firebase validar
       await _auth.signInWithEmailAndPassword(
         email: email,
         password: senha,
       );
-      _getUser();
+
+      return null; // Sucesso
+
     } on FirebaseAuthException catch (e) {
-      // Mapeia TODOS os erros possíveis para português
+      // Tratamento específico de erros do Firebase
       switch (e.code) {
         case 'user-not-found':
-          throw AuthException('Email não encontrado. Cadastre-se');
+          return 'Email não cadastrado.\nCrie uma conta primeiro clicando em "Registrar".';
         case 'wrong-password':
-          throw AuthException('Senha incorreta');
+          return 'Senha incorreta.\nTente novamente.';
         case 'invalid-email':
-          throw AuthException('Email inválido');
+          return 'Email inválido.\nVerifique o formato do email.';
         case 'user-disabled':
-          throw AuthException('Usuário desabilitado');
-        case 'too-many-requests':
-          throw AuthException('Muitas tentativas. Aguarde um momento');
-        case 'operation-not-allowed':
-          throw AuthException('Operação não permitida');
-        case 'network-request-failed':
-          throw AuthException('Erro de conexão. Verifique sua internet');
+          return 'Esta conta foi desativada.\nEntre em contato com o suporte.';
         case 'invalid-credential':
-          throw AuthException('Email ou senha incorretos');
-        case 'INVALID_LOGIN_CREDENTIALS':
-          throw AuthException('Email ou senha incorretos');
+          return 'Email ou senha incorretos.\nVerifique seus dados.';
+        case 'too-many-requests':
+          return 'Muitas tentativas de login.\nTente novamente em alguns minutos.';
+        case 'network-request-failed':
+          return 'Erro de conexão.\nVerifique sua internet.';
         default:
-          throw AuthException('Erro ao fazer login. Verifique seus dados');
+          return 'Erro ao fazer login: ${e.message}';
       }
     } catch (e) {
-      throw AuthException('Erro ao fazer login. Tente novamente');
+      return 'Erro inesperado: $e';
     }
   }
 
+  // MÉTODO DE REGISTRO (criar nova conta - HABILITADO)
+  Future<String?> registrar({
+    required String email,
+    required String senha,
+  }) async {
+    try {
+      // Remove a verificação prévia também aqui
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: senha,
+      );
+
+      return null; // Sucesso
+
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          return 'Este email já está em uso.\nFaça login ou use outro email.';
+        case 'weak-password':
+          return 'Senha muito fraca.\nUse pelo menos 6 caracteres com letras e números.';
+        case 'invalid-email':
+          return 'Email inválido.\nVerifique o formato (exemplo@email.com).';
+        case 'operation-not-allowed':
+          return 'Registro temporariamente desabilitado.\nTente novamente mais tarde.';
+        default:
+          return 'Erro ao registrar: ${e.message}';
+      }
+    } catch (e) {
+      return 'Erro inesperado: $e';
+    }
+  }
+
+  // Método auxiliar para verificar se email existe
+  Future<bool> emailExiste(String email) async {
+    try {
+      final methods = await _auth.fetchSignInMethodsForEmail(email);
+      return methods.isNotEmpty;
+    } catch (e) {
+      print('Erro ao verificar email: $e');
+      return false;
+    }
+  }
+
+  // Logout
   Future<void> logout() async {
     await _auth.signOut();
-    _getUser();
+  }
+
+  // Resetar senha
+  Future<String?> resetarSenha(String email) async {
+    try {
+      // Verifica se email existe
+      final methods = await _auth.fetchSignInMethodsForEmail(email);
+
+      if (methods.isEmpty) {
+        return 'Email não encontrado.\nVerifique se digitou corretamente.';
+      }
+
+      await _auth.sendPasswordResetEmail(email: email);
+      return null; // Sucesso
+
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          return 'Email inválido.';
+        case 'user-not-found':
+          return 'Usuário não encontrado.';
+        default:
+          return 'Erro ao enviar email: ${e.message}';
+      }
+    } catch (e) {
+      return 'Erro inesperado: $e';
+    }
   }
 }

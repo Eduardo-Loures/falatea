@@ -50,15 +50,38 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  // MÉTODO DE LOGIN ATUALIZADO
   Future<void> login() async {
     setState(() => isLoading = true);
+
     try {
-      await context.read<AuthService>().login(email.text.trim(), senha.text);
-    } on AuthException catch (e) {
+      final authService = context.read<AuthService>();
+
+      // Chama o novo método login que retorna String? (mensagem de erro ou null)
+      final erro = await authService.login(
+        email: email.text.trim(),
+        senha: senha.text,
+      );
+
+      // Se houver erro, mostra SnackBar
+      if (erro != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(erro),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      // Se erro == null, login foi bem sucedido e AuthCheck navega automaticamente
+
+    } catch (e) {
+      // Captura qualquer erro inesperado
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.message),
+            content: Text('Erro inesperado: $e'),
             backgroundColor: Colors.red[700],
             behavior: SnackBarBehavior.floating,
           ),
@@ -69,15 +92,58 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // MÉTODO DE REGISTRO ATUALIZADO
   Future<void> registrar() async {
     setState(() => isLoading = true);
+
     try {
-      await context.read<AuthService>().registrar(email.text.trim(), senha.text);
-    } on AuthException catch (e) {
+      final authService = context.read<AuthService>();
+
+      // Chama o novo método registrar que retorna String? (mensagem de erro ou null)
+      final erro = await authService.registrar(
+        email: email.text.trim(),
+        senha: senha.text,
+      );
+
+      if (mounted) {
+        if (erro != null) {
+          // Se houver erro, mostra SnackBar vermelho
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(erro),
+              backgroundColor: Colors.red[700],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        } else {
+          // Se sucesso, mostra mensagem de sucesso
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text('Conta criada com sucesso!\nFazendo login...'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green[700],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          // AuthCheck detecta o login automático e navega
+        }
+      }
+
+    } catch (e) {
+      // Captura qualquer erro inesperado
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.message),
+            content: Text('Erro inesperado: $e'),
             backgroundColor: Colors.red[700],
             behavior: SnackBarBehavior.floating,
           ),
@@ -232,6 +298,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey[50],
+                                helperText: isLogin ? null : 'Mínimo 6 caracteres',
                               ),
                               textInputAction: TextInputAction.done,
                               validator: validatePassword,
@@ -333,4 +400,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
