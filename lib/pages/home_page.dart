@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.initState();
     tabController = TabController(length: categorias.length, vsync: this);
 
-    // IMPORTANTE: Limpa botões não-fixos antes de carregar
+    // Limpa botões não-fixos antes de carregar
     categorias.forEach((categoria, botoes) {
       botoes.removeWhere((botao) => !botao.isFixo);
     });
@@ -75,6 +75,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       _categoryKeys[categoria] = GlobalKey();
     }
 
+    // LISTENER DO TABCONTROLLER
     tabController.addListener(() {
       if (tabController.indexIsChanging) {
         _scrollToCategory(tabController.index);
@@ -149,16 +150,46 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   // NAVEGAÇÃO E SCROLL
   void _scrollToCategory(int index) {
-    String categoria = categorias.keys.elementAt(index);
-    final key = _categoryKeys[categoria];
+    if (!_scrollController.hasClients) return;
 
-    if (key?.currentContext != null) {
-      Scrollable.ensureVisible(
-        key!.currentContext!,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+
+        final orientation = MediaQuery.of(context).orientation;
+        final crossAxisCount = orientation == Orientation.portrait ? 3 : 5;
+
+        double offset = 0;
+
+        // Para cada categoria antes da selecionada
+        for (int i = 0; i < index; i++) {
+          final categoria = categorias.keys.elementAt(i);
+          final numBotoes = categorias[categoria]!.length;
+
+          // Calcula quantas linhas essa categoria ocupa
+          final linhas = (numBotoes / crossAxisCount).ceil();
+
+          final childAspectRatio = orientation == Orientation.portrait ? 1.0 : 1.4;
+          final itemHeight = (MediaQuery.of(context).size.width - 16) / crossAxisCount / childAspectRatio;
+          final spacing = orientation == Orientation.portrait ? 10 : 8;
+
+          offset += 40; // Título da categoria
+          offset += (linhas * itemHeight) + ((linhas - 1) * spacing);
+          offset += 16; // Padding entre categorias
+        }
+
+        // Faz o scroll
+        _scrollController.animateTo(
+          offset.clamp(
+            0,
+            _scrollController.position.maxScrollExtent,
+          ),
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      } catch (e) {
+        print('Erro ao calcular scroll: $e');
+      }
+    });
   }
 
   void _configureOrientationListener() {
@@ -278,20 +309,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo[50],
-                      borderRadius: BorderRadius.circular(8),
+                title: const Center(
+                  child: Text(
+                    'Criar novo botão',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Icon(Icons.add, color: Colors.indigo[700]),
                   ),
-                  const SizedBox(width: 12),
-                  const Text('Criar novo botão'),
-                ],
-              ),
+                ),
               content: SingleChildScrollView(
                 child: SizedBox(
                   width: orientation == Orientation.portrait
@@ -495,11 +521,32 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
                         isExpanded: true,
+                        // MODIFICAÇÃO PRINCIPAL: selectedItemBuilder mostra o item selecionado com a cor
                         selectedItemBuilder: (BuildContext context) {
                           return coresDisponiveis.keys.map((String nome) {
-                            return Text(nome, style: const TextStyle(fontSize: 15));
+                            return Row(
+                              children: [
+                                // Quadradinho com a cor
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: coresDisponiveis[nome]!,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.grey[400]!, width: 1),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Nome da cor
+                                Text(
+                                  nome,
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                              ],
+                            );
                           }).toList();
                         },
+                        // Items da lista (quando abre o dropdown)
                         items: coresDisponiveis.keys
                             .map((nome) => DropdownMenuItem(
                           value: nome,
@@ -662,6 +709,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
             elevation: 0,
             actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  onPressed: mostrarDialogoAdicionarBotao,
+                  icon: const Icon(Icons.add_circle),
+                  tooltip: 'Adicionar novo botão',
+                  iconSize: 28,
+                ),
+              ),
               PopupMenuButton<String>(
                 // Ícone menor em landscape
                 iconSize: isLandscape ? 20 : 24,
