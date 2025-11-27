@@ -70,7 +70,7 @@ class PerfisPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Crie perfis para seus alunos',
+            'Crie um perfil diferente para cada pessoa',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[500],
@@ -227,9 +227,8 @@ class PerfisPage extends StatelessWidget {
     ];
 
     final icones = [
-      Icons.person, Icons.child_care, Icons.face, Icons.mood,
-      Icons.star, Icons.favorite, Icons.pets, Icons.sports_soccer,
-      Icons.music_note, Icons.palette, Icons.school, Icons.toys,
+      Icons.person, Icons.child_care, Icons.face,Icons.face_2, Icons.mood,
+      Icons.face_3, Icons.face_4, Icons.face_5, Icons.face_6, Icons.face_sharp,
     ];
 
     showDialog(

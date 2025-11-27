@@ -60,10 +60,12 @@ class SelecaoPerfilPage extends StatelessWidget {
           );
         },
         icon: const Icon(Icons.add),
-        label: const Text('Novo Perfil'),
+        label: const Text('Gerenciar Perfis'),
       ),
     );
   }
+
+
 
   Widget _buildEmptyState(BuildContext context) {
     return Center(
@@ -322,6 +324,7 @@ class SelecaoPerfilPage extends StatelessWidget {
       ),
     );
   }
+
 
   void _confirmarLogout(BuildContext context) {
     showDialog(

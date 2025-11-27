@@ -482,10 +482,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                // Fecha o diálogo primeiro
                 Navigator.of(dialogContext).pop();
 
-                // Mostra loading
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -499,28 +497,25 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                 );
 
                 try {
-                  // Executa o logout
+                  // IMPORTANTE: Limpa dados da MEMÓRIA (não deleta do storage)
+                  final perfilService = context.read<PerfilService>();
+                  perfilService.limparDadosMemoria(); // Apenas limpa da RAM
+
+                  // Faz logout
                   await authService.logout();
 
-                  // delay para garantir processamento
                   await Future.delayed(const Duration(milliseconds: 300));
 
-                  // Fecha o loading se o context ainda existir
                   if (context.mounted) {
-                    Navigator.of(context).pop();
-
-                    // Remove TODAS as telas e vai para o login
-                    // O AuthCheck vai detectar que não está logado e mostrar a tela de login
+                    Navigator.of(context).pop(); // Fecha loading
                     Navigator.of(context).pushNamedAndRemoveUntil(
                       '/',
                           (route) => false,
                     );
                   }
                 } catch (e) {
-                  // Fecha o loading em caso de erro
                   if (context.mounted) {
                     Navigator.of(context).pop();
-
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Row(
@@ -538,7 +533,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                       ),
                     );
                   }
-                  print('Erro no logout: $e');
+                  print('❌ Erro no logout: $e');
                 }
               },
               style: ElevatedButton.styleFrom(

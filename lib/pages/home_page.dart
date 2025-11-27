@@ -119,14 +119,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Future<void> _carregarConfigsSalvas() async {
     try {
       final perfilService = context.read<PerfilService>();
-      final botoesPersonalizados = perfilService.getBotoesPerfilAtivo();
+
+      // USA A VERSÃO ASSÍNCRONA
+      final botoesPersonalizados = await perfilService.getBotoesPerfilAtivoAsync();
 
       // Remove TODOS os botões não-fixos antes de carregar os novos
       categorias.forEach((categoria, botoes) {
         botoes.removeWhere((botao) => !botao.isFixo);
       });
 
-      // Adiciona apenas os botões personalizados do perfil
+      // Adiciona apenas os botões personalizados (não-fixos) do perfil
       botoesPersonalizados.forEach((categoria, botoes) {
         if (categorias.containsKey(categoria)) {
           // Garante que só adiciona botões não-fixos
@@ -136,9 +138,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       });
 
       if (mounted) setState(() {});
-      print('Botões personalizados carregados com sucesso!');
+      print('✅ Botões personalizados carregados com sucesso!');
     } catch (e) {
-      print('Erro ao carregar botões personalizados: $e');
+      print('❌ Erro ao carregar botões personalizados: $e');
     }
   }
 

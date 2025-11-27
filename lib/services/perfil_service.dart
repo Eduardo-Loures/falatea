@@ -1,191 +1,357 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:projeto/models/botao_aac_model.dart';
-import 'package:projeto/models/perfil_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
+import 'package:projeto/models/perfil_model.dart';
+import 'package:projeto/models/botao_aac_model.dart';
 
-/// Service para gerenciar perfis e seus botões personalizados
 class PerfilService extends ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   List<Perfil> _perfis = [];
   Perfil? _perfilAtivo;
 
-  // Armazena botões personalizados por perfil
-  // Estrutura: {perfilId: {categoria: [BotaoAAC]}}
-  Map<String, Map<String, List<BotaoAAC>>> _botoesPersonalizadosPorPerfil = {};
-
   List<Perfil> get perfis => _perfis;
   Perfil? get perfilAtivo => _perfilAtivo;
+  bool get temPerfis => _perfis.isNotEmpty;
+  int get quantidadePerfis => _perfis.length;
+
+  // Pega o UID do usuário atual
+  String? get _userUid => _auth.currentUser?.uid;
 
   PerfilService() {
-    carregarPerfis();
+    _inicializar();
+
+    _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        // Usuário logou, carrega dados
+        print('AuthStateChanged: Usuário logou, carregando dados');
+        carregarDadosUsuario();
+      } else {
+        // Usuário deslogou, limpa memória
+        print('AuthStateChanged: Usuário deslogou, limpando memória');
+        limparDadosMemoria();
+      }
+    });
   }
 
-  /// Carrega todos os perfis salvos
-  Future<void> carregarPerfis() async {
+  Future<void> _inicializar() async {
+    // Aguarda autenticação estar pronta
+    await Future.delayed(const Duration(milliseconds: 100));
+    await carregarDadosUsuario();
+  }
+
+  // CARREGAR DADOS DO USUÁRIO AO FAZER LOGIN
+  Future<void> carregarDadosUsuario() async {
+    print('🔍 DEBUG: Iniciando carregarDadosUsuario');
+    print('🔍 DEBUG: _userUid = $_userUid');
+
+    if (_userUid == null) {
+      print('Nenhum usuário autenticado');
+      return;
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Carrega lista de perfis
-      String? perfisJson = prefs.getString('perfis');
-      if (perfisJson != null && perfisJson.isNotEmpty) {
-        List<dynamic> perfisList = json.decode(perfisJson);
-        _perfis = perfisList.map((p) => Perfil.fromJson(p)).toList();
-      }
+      // Carrega perfis do usuário específico
+      final key = 'perfis_user_$_userUid';
+      print('DEBUG: Chave para carregar = $key');
 
-      // Carrega perfil ativo
-      String? perfilAtivoId = prefs.getString('perfil_ativo_id');
-      if (perfilAtivoId != null && _perfis.isNotEmpty) {
-        try {
-          _perfilAtivo = _perfis.firstWhere((p) => p.id == perfilAtivoId);
-        } catch (e) {
+      final jsonString = prefs.getString(key);
+      print('DEBUG: Dados carregados: ${jsonString != null ? "SIM" : "NÃO"}');
+
+      if (jsonString != null && jsonString.isNotEmpty) {
+        final List<dynamic> perfisJson = jsonDecode(jsonString);
+        print('DEBUG: Quantidade de perfis no JSON = ${perfisJson.length}');
+
+        _perfis = perfisJson.map((json) => Perfil.fromJson(json)).toList();
+        print('DEBUG: Perfis carregados na memória = ${_perfis.length}');
+
+        // Carrega perfil ativo
+        final perfilAtivoId = prefs.getString('perfil_ativo_user_$_userUid');
+        print('DEBUG: Perfil ativo ID = $perfilAtivoId');
+
+        if (perfilAtivoId != null) {
+          try {
+            _perfilAtivo = _perfis.firstWhere((p) => p.id == perfilAtivoId);
+            print('DEBUG: Perfil ativo encontrado: ${_perfilAtivo!.nome}');
+          } catch (e) {
+            // Se não encontrar, usa o primeiro
+            _perfilAtivo = _perfis.isNotEmpty ? _perfis.first : null;
+            print('DEBUG: Perfil ativo não encontrado, usando primeiro');
+          }
+        } else if (_perfis.isNotEmpty) {
           _perfilAtivo = _perfis.first;
+          print('DEBUG: Nenhum perfil ativo salvo, usando primeiro');
         }
-      } else if (_perfis.isNotEmpty) {
-        _perfilAtivo = _perfis.first;
-      }
 
-      // Carrega botões personalizados de todos os perfis
-      await _carregarTodosBotoesPersonalizados();
+        print('${_perfis.length} perfis carregados para usuário $_userUid');
+      } else {
+        print('DEBUG: Nenhum dado encontrado no SharedPreferences');
+        _perfis = [];
+        _perfilAtivo = null;
+      }
 
       notifyListeners();
-      print('Perfis carregados: ${_perfis.length}');
     } catch (e) {
-      print('Erro ao carregar perfis: $e');
+      print('Erro ao carregar dados do usuário: $e');
     }
   }
 
-  /// Salva todos os perfis
-  Future<void> _salvarPerfis() async {
+  // LIMPAR DADOS DA MEMÓRIA AO FAZER LOGOUT (NÃO DELETA DO STORAGE)
+  void limparDadosMemoria() {
+    // Limpa apenas da memória, NÃO deleta do SharedPreferences
+    _perfis = [];
+    _perfilAtivo = null;
+    notifyListeners();
+    print('Dados limpos da memória (mantidos no storage)');
+  }
+
+
+  // DELETAR TODOS OS DADOS DO USUÁRIO (USE COM CUIDADO!)
+  Future<void> deletarTodosDadosUsuario() async {
+    if (_userUid == null) return;
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      String perfisJson = json.encode(_perfis.map((p) => p.toJson()).toList());
-      await prefs.setString('perfis', perfisJson);
-      print('Perfis salvos com sucesso!');
+
+      // Remove todas as chaves relacionadas ao usuário atual
+      final keys = prefs.getKeys();
+      final keysParaRemover = keys.where((key) =>
+          key.contains('user_$_userUid')
+      ).toList();
+
+      for (var key in keysParaRemover) {
+        await prefs.remove(key);
+      }
+
+      // Limpa dados na memória
+      _perfis = [];
+      _perfilAtivo = null;
+      notifyListeners();
+
+      print('Todos os dados do usuário $_userUid deletados permanentemente');
+    } catch (e) {
+      print('Erro ao deletar dados: $e');
+    }
+  }
+
+
+  // SALVAR PERFIS (COM UID DO USUÁRIO)
+
+  Future<void> _salvarPerfis() async {
+    print('DEBUG: Iniciando _salvarPerfis');
+    print('DEBUG: _userUid = $_userUid');
+    print('DEBUG: _perfis.length = ${_perfis.length}');
+    print('DEBUG: _perfilAtivo = ${_perfilAtivo?.nome}');
+
+    if (_userUid == null) {
+      print('Nenhum usuário autenticado - dados não salvos');
+      return;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Chave específica do usuário
+      final key = 'perfis_user_$_userUid';
+      print('DEBUG: Chave para salvar = $key');
+
+      final perfisJson = _perfis.map((p) => p.toJson()).toList();
+      print('DEBUG: Perfis JSON = $perfisJson');
+
+      await prefs.setString(key, jsonEncode(perfisJson));
+      print('DEBUG: Dados gravados no SharedPreferences');
+
+      // Salva perfil ativo
+      if (_perfilAtivo != null) {
+        await prefs.setString('perfil_ativo_user_$_userUid', _perfilAtivo!.id);
+        print('DEBUG: Perfil ativo salvo: ${_perfilAtivo!.id}');
+      }
+
+      // VERIFICA SE REALMENTE SALVOU
+      final verificacao = prefs.getString(key);
+      print('DEBUG: Verificação - dados salvos: ${verificacao != null ? "SIM" : "NÃO"}');
+
+      print('Perfis salvos para usuário $_userUid');
     } catch (e) {
       print('Erro ao salvar perfis: $e');
     }
   }
 
-  /// Cria um novo perfil
+  // CRIAR PERFIL
   Future<void> criarPerfil(Perfil perfil) async {
     _perfis.add(perfil);
+
+    // Se for o primeiro perfil, define como ativo
+    if (_perfis.length == 1) {
+      _perfilAtivo = perfil;
+    }
+
     await _salvarPerfis();
-
-    // Inicializa estrutura vazia de botões para este perfil
-    _botoesPersonalizadosPorPerfil[perfil.id] = {};
-
     notifyListeners();
   }
 
-  /// Atualiza um perfil existente
-  Future<void> atualizarPerfil(Perfil perfilAtualizado) async {
-    int index = _perfis.indexWhere((p) => p.id == perfilAtualizado.id);
+  // ATUALIZAR PERFIL
+  Future<void> atualizarPerfil(Perfil perfil) async {
+    final index = _perfis.indexWhere((p) => p.id == perfil.id);
     if (index != -1) {
-      _perfis[index] = perfilAtualizado;
-      await _salvarPerfis();
+      _perfis[index] = perfil;
 
-      if (_perfilAtivo?.id == perfilAtualizado.id) {
-        _perfilAtivo = perfilAtualizado;
+      // Atualiza o perfil ativo se for o mesmo
+      if (_perfilAtivo?.id == perfil.id) {
+        _perfilAtivo = perfil;
       }
 
+      await _salvarPerfis();
       notifyListeners();
     }
   }
 
-  /// Exclui um perfil
+  // EXCLUIR PERFIL
   Future<void> excluirPerfil(String perfilId) async {
+    // Remove perfil da lista
     _perfis.removeWhere((p) => p.id == perfilId);
-    await _salvarPerfis();
-
-    // Remove botões personalizados deste perfil
-    _botoesPersonalizadosPorPerfil.remove(perfilId);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('botoes_personalizados_$perfilId');
 
     // Se era o perfil ativo, seleciona outro
     if (_perfilAtivo?.id == perfilId) {
       _perfilAtivo = _perfis.isNotEmpty ? _perfis.first : null;
-      if (_perfilAtivo != null) {
-        await selecionarPerfil(_perfilAtivo!.id);
-      }
     }
 
+    // Remove botões personalizados desse perfil
+    if (_userUid != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('botoes_perfil_${perfilId}_user_$_userUid');
+    }
+
+    await _salvarPerfis();
     notifyListeners();
   }
 
-  /// Seleciona um perfil como ativo
+  // SELECIONAR PERFIL
   Future<void> selecionarPerfil(String perfilId) async {
-    _perfilAtivo = _perfis.firstWhere((p) => p.id == perfilId);
+    final perfil = _perfis.firstWhere(
+          (p) => p.id == perfilId,
+      orElse: () => throw Exception('Perfil não encontrado'),
+    );
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('perfil_ativo_id', perfilId);
-
+    _perfilAtivo = perfil;
+    await _salvarPerfis();
     notifyListeners();
-    print('Perfil ativo: ${_perfilAtivo?.nome}');
   }
 
-  /// Carrega botões personalizados de todos os perfis
-  Future<void> _carregarTodosBotoesPersonalizados() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    for (var perfil in _perfis) {
-      String? botoesJson = prefs.getString('botoes_personalizados_${perfil.id}');
-
-      if (botoesJson != null && botoesJson.isNotEmpty) {
-        Map<String, dynamic> dadosSalvos = json.decode(botoesJson);
-        Map<String, List<BotaoAAC>> botoesCategorizados = {};
-
-        dadosSalvos.forEach((categoria, botoesList) {
-          botoesCategorizados[categoria] = (botoesList as List)
-              .map((b) => BotaoAAC.fromJson(b))
-              .toList();
-        });
-
-        _botoesPersonalizadosPorPerfil[perfil.id] = botoesCategorizados;
-      } else {
-        _botoesPersonalizadosPorPerfil[perfil.id] = {};
-      }
+  // SALVAR BOTÕES PERSONALIZADOS (COM UID)
+  Future<void> salvarBotoesPerfilAtivo(Map<String, List<BotaoAAC>> botoes) async {
+    if (_perfilAtivo == null) {
+      print('Nenhum perfil ativo');
+      return;
     }
-  }
 
-  /// Retorna botões personalizados do perfil ativo
-  Map<String, List<BotaoAAC>> getBotoesPerfilAtivo() {
-    if (_perfilAtivo == null) return {};
-    return _botoesPersonalizadosPorPerfil[_perfilAtivo!.id] ?? {};
-  }
-
-  /// Salva botões personalizados do perfil ativo
-  Future<void> salvarBotoesPerfilAtivo(Map<String, List<BotaoAAC>> categorias) async {
-    if (_perfilAtivo == null) return;
+    if (_userUid == null) {
+      print('Nenhum usuário autenticado');
+      return;
+    }
 
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Filtra apenas botões não fixos
-      Map<String, List<Map<String, dynamic>>> botoesPersonalizados = {};
+      // CHAVE AGORA INCLUI O UID DO USUÁRIO
+      final key = 'botoes_perfil_${_perfilAtivo!.id}_user_$_userUid';
 
-      categorias.forEach((categoria, botoes) {
-        List<BotaoAAC> botoesNaoFixos = botoes.where((b) => !b.isFixo).toList();
+      // Filtra apenas botões NÃO-FIXOS para salvar
+      final Map<String, dynamic> botoesJson = {};
+
+      botoes.forEach((categoria, listaBotoes) {
+        final botoesNaoFixos = listaBotoes
+            .where((botao) => !botao.isFixo)
+            .map((botao) => botao.toJson())
+            .toList();
+
         if (botoesNaoFixos.isNotEmpty) {
-          botoesPersonalizados[categoria] = botoesNaoFixos.map((b) => b.toJson()).toList();
+          botoesJson[categoria] = botoesNaoFixos;
         }
       });
 
-      String jsonString = json.encode(botoesPersonalizados);
-      await prefs.setString('botoes_personalizados_${_perfilAtivo!.id}', jsonString);
-
-      // Atualiza cache em memória
-      _botoesPersonalizadosPorPerfil[_perfilAtivo!.id] = categorias;
-
-      print('Botões do perfil ${_perfilAtivo!.nome} salvos!');
+      await prefs.setString(key, jsonEncode(botoesJson));
+      print('Botões salvos para perfil ${_perfilAtivo!.nome} (usuário $_userUid)');
     } catch (e) {
       print('Erro ao salvar botões: $e');
     }
   }
 
-  /// Verifica se há algum perfil criado
-  bool get temPerfis => _perfis.isNotEmpty;
+  // CARREGAR BOTÕES PERSONALIZADOS (COM UID)
+  Map<String, List<BotaoAAC>> getBotoesPerfilAtivo() {
+    if (_perfilAtivo == null) {
+      print('Nenhum perfil ativo');
+      return {};
+    }
 
-  /// Retorna quantidade de perfis
-  int get quantidadePerfis => _perfis.length;
+    if (_userUid == null) {
+      print('Nenhum usuário autenticado');
+      return {};
+    }
+
+    try {
+      SharedPreferences.getInstance().then((prefs) {
+        // CHAVE AGORA INCLUI O UID DO USUÁRIO
+        final key = 'botoes_perfil_${_perfilAtivo!.id}_user_$_userUid';
+        final jsonString = prefs.getString(key);
+
+        if (jsonString != null) {
+          print('Botões carregados para perfil ${_perfilAtivo!.nome} (usuário $_userUid)');
+        } else {
+          print('Nenhum botão salvo para este perfil e usuário');
+        }
+      });
+
+      // Retorna vazio por enquanto (sincrono)
+      // Os botões serão carregados de forma assíncrona na HomePage
+      return {};
+    } catch (e) {
+      print('Erro ao carregar botões: $e');
+      return {};
+    }
+  }
+
+  // VERSÃO ASSÍNCRONA PARA CARREGAR BOTÕES
+  Future<Map<String, List<BotaoAAC>>> getBotoesPerfilAtivoAsync() async {
+    if (_perfilAtivo == null) {
+      print('Nenhum perfil ativo');
+      return {};
+    }
+
+    if (_userUid == null) {
+      print('Nenhum usuário autenticado');
+      return {};
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // CHAVE AGORA INCLUI O UID DO USUÁRIO
+      final key = 'botoes_perfil_${_perfilAtivo!.id}_user_$_userUid';
+      final jsonString = prefs.getString(key);
+
+      if (jsonString == null) {
+        print('Nenhum botão salvo para este perfil e usuário');
+        return {};
+      }
+
+      final Map<String, dynamic> botoesJson = jsonDecode(jsonString);
+      final Map<String, List<BotaoAAC>> botoes = {};
+
+      botoesJson.forEach((categoria, listaBotoesJson) {
+        botoes[categoria] = (listaBotoesJson as List)
+            .map((json) => BotaoAAC.fromJson(json))
+            .toList();
+      });
+
+      print('${botoes.length} categorias com botões carregadas para perfil ${_perfilAtivo!.nome}');
+      return botoes;
+    } catch (e) {
+      print('Erro ao carregar botões: $e');
+      return {};
+    }
+  }
 }
