@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io' show Platform;
 
 /// Service para gerenciar configurações de Text-to-Speech (TTS)
 class TtsService extends ChangeNotifier {
@@ -10,6 +11,7 @@ class TtsService extends ChangeNotifier {
   double _velocidadeFala = 0.5;    // 0.3 a 1.0
   double _tomVoz = 1.0;            // 0.5 a 2.0
   double _volume = 1.0;            // 0.0 a 1.0
+  bool _isInitialized = false;
 
   bool get vozFeminina => _vozFeminina;
   double get velocidadeFala => _velocidadeFala;
@@ -24,9 +26,49 @@ class TtsService extends ChangeNotifier {
 
   /// Inicializa TTS e carrega configurações salvas
   Future<void> _inicializar() async {
-    await _tts.setLanguage('pt-BR');
-    await _carregarConfiguracoes();
-    await _aplicarConfiguracoes();
+    try {
+      debugPrint('🔊 Inicializando TTS...');
+
+      // Configurações específicas para Android
+      if (Platform.isAndroid) {
+        await _tts.setSharedInstance(true);
+      }
+
+      // IMPORTANTE: Verifica se pt-BR está disponível
+      final isLanguageAvailable = await _tts.isLanguageAvailable('pt-BR');
+
+      if (isLanguageAvailable) {
+        await _tts.setLanguage('pt-BR');
+        debugPrint('✅ Idioma pt-BR configurado');
+      } else {
+        debugPrint('⚠️ pt-BR não disponível, usando configuração padrão');
+        // Tenta configurar mesmo assim (alguns dispositivos funcionam)
+        await _tts.setLanguage('pt-BR');
+      }
+
+      // Carrega e aplica configurações
+      await _carregarConfiguracoes();
+      await _aplicarConfiguracoes();
+
+      // Configura handlers para debug
+      _tts.setStartHandler(() {
+        debugPrint('🔊 TTS: Iniciando fala');
+      });
+
+      _tts.setCompletionHandler(() {
+        debugPrint('✅ TTS: Fala concluída');
+      });
+
+      _tts.setErrorHandler((msg) {
+        debugPrint('❌ TTS Erro: $msg');
+      });
+
+      _isInitialized = true;
+      debugPrint('✅ TTS inicializado com sucesso');
+
+    } catch (e) {
+      debugPrint('❌ Erro ao inicializar TTS: $e');
+    }
   }
 
   /// Carrega configurações salvas
@@ -38,8 +80,9 @@ class TtsService extends ChangeNotifier {
       _tomVoz = prefs.getDouble('tts_tom') ?? 1.0;
       _volume = prefs.getDouble('tts_volume') ?? 1.0;
       notifyListeners();
+      debugPrint('✅ Configurações TTS carregadas');
     } catch (e) {
-      debugPrint('Erro ao carregar configurações TTS: $e');
+      debugPrint('❌ Erro ao carregar configurações TTS: $e');
     }
   }
 
@@ -52,7 +95,7 @@ class TtsService extends ChangeNotifier {
       await prefs.setDouble('tts_tom', _tomVoz);
       await prefs.setDouble('tts_volume', _volume);
     } catch (e) {
-      debugPrint('Erro ao salvar configurações TTS: $e');
+      debugPrint('❌ Erro ao salvar configurações TTS: $e');
     }
   }
 
@@ -67,23 +110,28 @@ class TtsService extends ChangeNotifier {
       double pitchAjustado = _vozFeminina ? _tomVoz * 1.2 : _tomVoz * 0.9;
       await _tts.setPitch(pitchAjustado);
 
-      // Define a voz específica
-      if (_vozFeminina) {
-        await _tts.setVoice({
-          "name": "pt-br-x-pte-network",
-          "locale": "pt-BR",
-        });
-      } else {
-        await _tts.setVoice({
-          "name": "pt-br-x-ptd-network",
-          "locale": "pt-BR",
-        });
+      // Tenta definir voz específica (funciona em alguns dispositivos)
+      try {
+        if (_vozFeminina) {
+          await _tts.setVoice({
+            "name": "pt-br-x-pte-network",
+            "locale": "pt-BR",
+          });
+        } else {
+          await _tts.setVoice({
+            "name": "pt-br-x-ptd-network",
+            "locale": "pt-BR",
+          });
+        }
+        debugPrint('✅ Voz específica definida: ${_vozFeminina ? "Feminina" : "Masculina"}');
+      } catch (e) {
+        // Se falhar ao definir voz específica, usa apenas o pitch
+        debugPrint('⚠️ Voz específica não disponível, usando apenas pitch');
       }
 
-      debugPrint(
-          'Configurações aplicadas → Voz: ${_vozFeminina ? "Feminina" : "Masculina"}');
+      debugPrint('✅ Configurações aplicadas → Voz: ${_vozFeminina ? "Feminina" : "Masculina"}');
     } catch (e) {
-      debugPrint('Erro ao aplicar configurações TTS: $e');
+      debugPrint('❌ Erro ao aplicar configurações TTS: $e');
     }
   }
 
@@ -121,10 +169,36 @@ class TtsService extends ChangeNotifier {
 
   /// Fala um texto
   Future<void> falar(String texto) async {
+    if (texto.trim().isEmpty) {
+      debugPrint('⚠️ Texto vazio, não há nada para falar');
+      return;
+    }
+
     try {
-      await _tts.speak(texto);
+      // Garante que está inicializado
+      if (!_isInitialized) {
+        debugPrint('⚠️ TTS não inicializado, inicializando...');
+        await _inicializar();
+      }
+
+      // Para qualquer fala anterior
+      await _tts.stop();
+
+      debugPrint('🔊 Falando: "$texto"');
+
+      // Fala o texto
+      final result = await _tts.speak(texto);
+
+      if (result == 1) {
+        debugPrint('✅ Fala iniciada com sucesso');
+      } else {
+        debugPrint('⚠️ TTS retornou código: $result');
+      }
     } catch (e) {
-      debugPrint('Erro ao falar: $e');
+      debugPrint('❌ Erro ao falar: $e');
+      // Tenta reinicializar em caso de erro
+      _isInitialized = false;
+      await _inicializar();
     }
   }
 
@@ -133,14 +207,14 @@ class TtsService extends ChangeNotifier {
     try {
       await _tts.stop();
     } catch (e) {
-      debugPrint('Erro ao parar TTS: $e');
+      debugPrint('❌ Erro ao parar TTS: $e');
     }
   }
 
   /// Testa a voz com uma frase
   Future<void> testarVoz() async {
     String textoTeste = _vozFeminina
-        ? "Olá! Esta é a voz feminina do FalaTEA.?"
+        ? "Olá! Esta é a voz feminina do FalaTEA."
         : "Olá! Esta é a voz masculina do FalaTEA.";
     await _aplicarConfiguracoes();
     await falar(textoTeste);

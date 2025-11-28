@@ -57,6 +57,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       BotaoAAC('pare', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/pare.png'),
       BotaoAAC('acabou', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/acabou.png'),
     ],
+    'Outros': [],
   };
 
   @override
@@ -286,17 +287,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'Celular': Icons.smartphone,
     };
 
-    // Lista de cores disponíveis
-    final Map<String, Color> coresDisponiveis = {
-      'Laranja': Colors.orange,
-      'Azul': Colors.blue,
-      'Verde-Azulado': Colors.teal,
-      'Verde Claro': Colors.lightGreen,
-      'Vermelho': Colors.red,
-      'Amarelo': Colors.amber,
-      'Rosa': Colors.pink,
-      'Ciano': Colors.cyan,
-      'Verde-Limão': Colors.lime,
+    // Mapa de categoria para cor fixa
+    final Map<String, Color> corPorCategoria = {
+      'Ações': Colors.orange,
+      'Pessoas': Colors.blue,
+      'Objetos': Colors.teal,
+      'Emoções': Colors.lightGreen,
+      'Negação': Colors.red,
+      'Outros': Colors.grey,
     };
 
     String iconeSelecionadoNome = 'Estrela';
@@ -499,83 +497,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         },
                       ),
                       const SizedBox(height: 20),
-                      const Divider(),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Icon(Icons.palette, size: 20, color: Colors.indigo[700]),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Cor do Botão:',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        value: corSelecionadaNome,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                        isExpanded: true,
-                        // MODIFICAÇÃO PRINCIPAL: selectedItemBuilder mostra o item selecionado com a cor
-                        selectedItemBuilder: (BuildContext context) {
-                          return coresDisponiveis.keys.map((String nome) {
-                            return Row(
-                              children: [
-                                // Quadradinho com a cor
-                                Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: coresDisponiveis[nome]!,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: Colors.grey[400]!, width: 1),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                // Nome da cor
-                                Text(
-                                  nome,
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                              ],
-                            );
-                          }).toList();
-                        },
-                        // Items da lista (quando abre o dropdown)
-                        items: coresDisponiveis.keys
-                            .map((nome) => DropdownMenuItem(
-                          value: nome,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: coresDisponiveis[nome]!,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.grey[400]!),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(nome, style: const TextStyle(fontSize: 15)),
-                            ],
-                          ),
-                        ))
-                            .toList(),
-                        onChanged: (String? valor) {
-                          setDialogState(() {
-                            corSelecionadaNome = valor ?? 'Laranja';
-                            corSelecionada = coresDisponiveis[corSelecionadaNome]!;
-                          });
-                        },
-                      ),
                     ],
                   ),
                 ),
@@ -598,11 +519,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     }
 
                     setState(() {
+                      final corDaCategoria = corPorCategoria[categoriaSelecionada] ?? Colors.grey;
+
                       categorias[categoriaSelecionada]!.add(
                         BotaoAAC(
                           labelController.text.trim(),
                           imagemSelecionada == null ? iconSelecionado : null,
-                          corSelecionada,
+                          corDaCategoria,
                           imagePath: imagemSelecionada,
                         ),
                       );
@@ -924,6 +847,21 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   ),
                                 ),
                               ),
+
+                              if (categorias[categoria]!.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  child: Text(
+                                    'Ainda não há botões criados nesta categoria.\nToque no + para adicionar botões aqui.',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontStyle: FontStyle.normal,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+
+                              if (categorias[categoria]!.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: GridView.count(
