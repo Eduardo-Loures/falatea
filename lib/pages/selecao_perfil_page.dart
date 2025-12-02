@@ -59,7 +59,7 @@ class SelecaoPerfilPage extends StatelessWidget {
             MaterialPageRoute(builder: (_) => const PerfisPage()),
           );
         },
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.manage_accounts),
         label: const Text('Gerenciar Perfis'),
       ),
     );

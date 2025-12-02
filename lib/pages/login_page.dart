@@ -11,12 +11,15 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
+  final nome = TextEditingController(); // NOVO
   final email = TextEditingController();
   final senha = TextEditingController();
+  final confirmarSenha = TextEditingController(); // NOVO
 
   bool isLogin = true;
   bool isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true; // NOVO
 
   late String titulo;
   late String actionButton;
@@ -30,8 +33,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    nome.dispose();
     email.dispose();
     senha.dispose();
+    confirmarSenha.dispose();
     super.dispose();
   }
 
@@ -50,20 +55,17 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  // MÉTODO DE LOGIN ATUALIZADO
   Future<void> login() async {
     setState(() => isLoading = true);
 
     try {
       final authService = context.read<AuthService>();
 
-      // Chama o novo método login que retorna String? (mensagem de erro ou null)
       final erro = await authService.login(
         email: email.text.trim(),
         senha: senha.text,
       );
 
-      // Se houver erro, mostra SnackBar
       if (erro != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -74,10 +76,8 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
-      // Se erro == null, login foi bem sucedido e AuthCheck navega automaticamente
 
     } catch (e) {
-      // Captura qualquer erro inesperado
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -92,14 +92,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // MÉTODO DE REGISTRO ATUALIZADO
   Future<void> registrar() async {
     setState(() => isLoading = true);
 
     try {
       final authService = context.read<AuthService>();
 
-      // Chama o novo método registrar que retorna String? (mensagem de erro ou null)
       final erro = await authService.registrar(
         email: email.text.trim(),
         senha: senha.text,
@@ -107,7 +105,6 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         if (erro != null) {
-          // Se houver erro, mostra SnackBar vermelho
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(erro),
@@ -117,15 +114,14 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         } else {
-          // Se sucesso, mostra mensagem de sucesso
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
                 children: [
                   const Icon(Icons.check_circle, color: Colors.white),
                   const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text('Conta criada com sucesso!\nFazendo login...'),
+                  Expanded(
+                    child: Text('Bem-vindo(a), ${nome.text.trim()}!\nConta criada com sucesso.'),
                   ),
                 ],
               ),
@@ -134,12 +130,10 @@ class _LoginPageState extends State<LoginPage> {
               duration: const Duration(seconds: 3),
             ),
           );
-          // AuthCheck detecta o login automático e navega
         }
       }
 
     } catch (e) {
-      // Captura qualquer erro inesperado
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -154,7 +148,17 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Validação aprimorada de email
+  // NOVA: Validação de nome
+  String? validateNome(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Informe seu nome';
+    }
+    if (value.trim().length < 3) {
+      return 'Nome deve ter pelo menos 3 caracteres';
+    }
+    return null;
+  }
+
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Informe o email';
@@ -172,6 +176,17 @@ class _LoginPageState extends State<LoginPage> {
     }
     if (value.length < 6) {
       return 'Sua senha deve ter no mínimo 6 caracteres';
+    }
+    return null;
+  }
+
+  // Validação de confirmação de senha
+  String? validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Confirme sua senha';
+    }
+    if (value != senha.text) {
+      return 'As senhas não são iguais';
     }
     return null;
   }
@@ -247,13 +262,35 @@ class _LoginPageState extends State<LoginPage> {
                             Text(
                               isLogin
                                   ? 'Entre para continuar'
-                                  : 'Crie sua conta gratuita',
+                                  : 'Preencha seus dados',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
                               ),
                             ),
                             const SizedBox(height: 32),
+
+                            // Campo Nome (apenas no registro)
+                            if (!isLogin) ...[
+                              TextFormField(
+                                controller: nome,
+                                decoration: InputDecoration(
+                                  labelText: 'Nome',
+                                  prefixIcon: Icon(Icons.person_outline),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                textCapitalization: TextCapitalization.words,
+                                keyboardType: TextInputType.name,
+                                textInputAction: TextInputAction.next,
+                                validator: validateNome,
+                                enabled: !isLoading,
+                              ),
+                              const SizedBox(height: 16),
+                            ],
 
                             // Campo Email
                             TextFormField(
@@ -298,17 +335,56 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 filled: true,
                                 fillColor: Colors.grey[50],
-                                helperText: isLogin ? null : 'Mínimo 6 caracteres',
+                                helperText: 'Mínimo 6 caracteres',
                               ),
-                              textInputAction: TextInputAction.done,
+                              textInputAction: isLogin ? TextInputAction.done : TextInputAction.next,
                               validator: validatePassword,
                               enabled: !isLoading,
                               onFieldSubmitted: (_) {
-                                if (formKey.currentState!.validate()) {
-                                  isLogin ? login() : registrar();
+                                if (isLogin && formKey.currentState!.validate()) {
+                                  login();
                                 }
                               },
                             ),
+
+                            // Campo Confirmar Senha (apenas no registro)
+                            if (!isLogin) ...[
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: confirmarSenha,
+                                obscureText: _obscureConfirmPassword,
+                                decoration: InputDecoration(
+                                  labelText: 'Confirme sua senha',
+                                  prefixIcon: Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureConfirmPassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                                      });
+                                    },
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                textInputAction: TextInputAction.done,
+                                validator: validateConfirmPassword,
+                                enabled: !isLoading,
+                                onFieldSubmitted: (_) {
+                                  if (formKey.currentState!.validate()) {
+                                    registrar();
+                                  }
+                                },
+                              ),
+                            ],
+
                             const SizedBox(height: 24),
 
                             // Botão Principal
@@ -374,7 +450,14 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Botão de alternância
                   TextButton(
-                    onPressed: isLoading ? null : () => setFormAction(!isLogin),
+                    onPressed: isLoading ? null : () {
+                      // Limpa os campos ao trocar
+                      nome.clear();
+                      email.clear();
+                      senha.clear();
+                      confirmarSenha.clear();
+                      setFormAction(!isLogin);
+                    },
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(

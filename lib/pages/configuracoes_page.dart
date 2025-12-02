@@ -43,13 +43,13 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
       ),
       body: ListView(
         children: [
-          // ===== SEÇÃO: USUÁRIO =====
+          // USUÁRIO
           _buildSecaoHeader('Usuário', Icons.person),
           _buildCardUsuario(usuario?.email ?? 'Não logado', usuario?.uid),
 
           const SizedBox(height: 16),
 
-          // ===== SEÇÃO: PERFIL ATIVO =====
+          // PERFIL ATIVO
           _buildSecaoHeader('Perfil Ativo', Icons.account_circle),
           if (perfilAtivo != null)
             _buildCardPerfilAtivo(perfilAtivo, perfilService)
@@ -58,16 +58,16 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
 
           const SizedBox(height: 16),
 
-          // ===== SEÇÃO: VOZ =====
+          //VOZ
           _buildSecaoHeader('Síntese de Voz', Icons.record_voice_over),
           _buildCardVoz(ttsService),
 
           const SizedBox(height: 16),
 
-          // ===== SEÇÃO: AÇÕES =====
+          //AÇÕES
           _buildSecaoHeader('Ações', Icons.settings),
 
-          // Botão Trocar Perfil
+          //Botão Trocar Perfil
           _buildBotaoAcao(
             icon: Icons.swap_horiz,
             titulo: 'Trocar Perfil',
@@ -83,7 +83,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
 
           const Divider(height: 1),
 
-          // Botão Sair
+          //Botão Sair
           _buildBotaoAcao(
             icon: Icons.logout,
             titulo: 'Sair da Conta',
@@ -94,7 +94,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
 
           const SizedBox(height: 32),
 
-          // ===== INFORMAÇÕES DO APP =====
+          //INFORMAÇÕES DO APP
           _buildInfoApp(),
         ],
       ),
@@ -382,6 +382,74 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
+                const SizedBox(height: 12),
+
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    // Verifica se vozes estão instaladas
+                    final ttsService = context.read<TtsService>();
+                    final temVozes = await ttsService.verificarVozesInstaladas();
+
+                    if (!temVozes) {
+                      // Mostra dialog explicativo
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Row(
+                            children: [
+                              Icon(Icons.warning, color: Colors.orange),
+                              SizedBox(width: 12),
+                              Text('Vozes Não Instaladas'),
+                            ],
+                          ),
+                          content: const Text(
+                            'Para o TTS funcionar corretamente, você precisa instalar as vozes em Português.\n\n'
+                                'Vamos abrir as configurações do sistema para você baixar as vozes.\n\n'
+                                'Procure por "Português (Brasil)" e faça o download.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                await ttsService.abrirConfiguracoesTTS();
+                              },
+                              icon: const Icon(Icons.download),
+                              label: const Text('Instalar Vozes'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo[700],
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.white),
+                              SizedBox(width: 12),
+                              Text('Vozes já instaladas!'),
+                            ],
+                          ),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.download_outlined),
+                  label: const Text('Instalar Vozes PT-BR'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.indigo[700],
+                    side: BorderSide(color: Colors.indigo[300]!),
+                    minimumSize: const Size(double.infinity, 45),
+                  ),
+                ),
               ],
             ),
           ),
@@ -431,7 +499,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           Text(
             'FalaTEA',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.grey[700],
             ),

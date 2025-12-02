@@ -656,7 +656,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     bool? confirmar = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Limpar Dados'),
+                        title: const Text('Limpar dados'),
                         content: Text('Isso removerá todos os botões personalizados de ${perfilAtivo?.nome}. Deseja continuar?'),
                         actions: [
                           TextButton(
@@ -749,7 +749,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       children: [
                         Icon(Icons.delete_forever, color: Colors.red),
                         SizedBox(width: 8),
-                        Text('Limpar Dados'),
+                        Text('Limpar Botões'),
                       ],
                     ),
                   ),
