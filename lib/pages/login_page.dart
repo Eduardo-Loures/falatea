@@ -134,11 +134,10 @@ class _LoginPageState extends State<LoginPage> {
             SnackBar(
               content: Text(erro),
               backgroundColor: Colors.red[700],
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
             ),
           );
         } else {
+          // MOSTRA A MENSAGEM DE SUCESSO
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
@@ -151,29 +150,15 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               backgroundColor: Colors.green[700],
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 3),
             ),
           );
 
-          // Após registrar, verificar perfis
-          final perfilService = context.read<PerfilService>();
-          await perfilService.carregarDadosUsuario();
+          // Aguarda o snackbar
+          await Future.delayed(const Duration(milliseconds: 800));
 
-          if (!mounted) return;
-
-          if (!perfilService.temPerfis) {
-            // Não tem perfis ainda ir para seleção
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
-            );
-          } else {
-            // Já tem perfis
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const HomePage()),
-            );
+          // DIRECIONA AUTOMATICAMENTE PARA A SELEÇÃO DE PERFIL
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/selecionar_perfil');
           }
         }
       }

@@ -19,37 +19,39 @@ class AuthService extends ChangeNotifier {
     });
   }
 
-  // MÉTODO DE LOGIN (apenas emails que já foram registrados)
+  // MeTODO DE LOGIN (apenas emails que já foram registrados)
   Future<String?> login({
     required String email,
     required String senha,
   }) async {
     try {
-      // Remove a verificação prévia - deixa o Firebase validar
+      // Firebase valida e realiza o login
       await _auth.signInWithEmailAndPassword(
         email: email,
         password: senha,
       );
 
+      // Recarrega dados do usuário (necessário para contas antigas)
+      await _auth.currentUser?.reload();
+      usuario = _auth.currentUser;
+
+      notifyListeners();
       return null; // Sucesso
 
     } on FirebaseAuthException catch (e) {
-      // Tratamento específico de erros do Firebase
       switch (e.code) {
         case 'user-not-found':
           return 'Email não cadastrado.\nCrie uma conta primeiro clicando em "Registrar".';
         case 'wrong-password':
           return 'Senha incorreta.\nTente novamente.';
         case 'invalid-email':
-          return 'Email inválido.\nVerifique o formato do email.';
+          return 'Email inválido.';
         case 'user-disabled':
-          return 'Esta conta foi desativada.\nEntre em contato com o suporte.';
+          return 'Esta conta foi desativada.';
         case 'invalid-credential':
-          return 'Email ou senha incorretos.\nVerifique seus dados.';
+          return 'Email ou senha incorretos.';
         case 'too-many-requests':
-          return 'Muitas tentativas de login.\nTente novamente em alguns minutos.';
-        case 'network-request-failed':
-          return 'Erro de conexão.\nVerifique sua internet.';
+          return 'Muitas tentativas de login.';
         default:
           return 'Erro ao fazer login: ${e.message}';
       }
@@ -58,39 +60,45 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // MÉTODO DE REGISTRO (criar nova conta)
+  // MeTODO DE REGISTRO (criar nova conta)
   Future<String?> registrar({
     required String email,
     required String senha,
     required String nome,
   }) async {
     try {
-      // Cria o usuário
       UserCredential cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
 
-      // Atualiza o displayName
+      // Atualiza o nome
       await cred.user!.updateDisplayName(nome);
-
-      // IMPORTANTE: Faz o Firebase recarregar os dados do usuário!
       await _auth.currentUser!.reload();
-
-      // Agora pega o usuário ATUALIZADO
       usuario = _auth.currentUser;
-
-      // Log de debug
-      print("Nome salvo no Firebase: ${usuario?.displayName}");
 
       notifyListeners();
       return null;
+
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          return 'Este email já está em uso.\nTente fazer login.';
+        case 'invalid-email':
+          return 'O email informado é inválido.';
+        case 'weak-password':
+          return 'A senha é muito fraca.\nUse pelo menos 6 caracteres.';
+        case 'operation-not-allowed':
+          return 'Cadastro com email/senha está desabilitado.';
+        default:
+          return 'Erro ao criar conta: ${e.message}';
+      }
     } catch (e) {
-      return e.toString();
+      return 'Erro inesperado: $e';
     }
   }
 
-  // Método auxiliar para verificar se email existe
+  // Metodo auxiliar para verificar se email existe
   Future<bool> emailExiste(String email) async {
     try {
       final methods = await _auth.fetchSignInMethodsForEmail(email);

@@ -246,7 +246,7 @@ class PerfisPage extends StatelessWidget {
                     TextField(
                       controller: nomeController,
                       decoration: const InputDecoration(
-                        labelText: 'Nome do aluno',
+                        labelText: 'Nome',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.person_outline),
                       ),
