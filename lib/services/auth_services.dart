@@ -58,35 +58,35 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // MÉTODO DE REGISTRO (criar nova conta - HABILITADO)
+  // MÉTODO DE REGISTRO (criar nova conta)
   Future<String?> registrar({
     required String email,
     required String senha,
+    required String nome,
   }) async {
     try {
-      // Remove a verificação prévia também aqui
-      await _auth.createUserWithEmailAndPassword(
+      // Cria o usuário
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: senha,
       );
 
-      return null; // Sucesso
+      // Atualiza o displayName
+      await cred.user!.updateDisplayName(nome);
 
-    } on FirebaseAuthException catch (e) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          return 'Este email já está em uso.\nFaça login ou use outro email.';
-        case 'weak-password':
-          return 'Senha muito fraca.\nUse pelo menos 6 caracteres com letras e números.';
-        case 'invalid-email':
-          return 'Email inválido.\nVerifique o formato (exemplo@email.com).';
-        case 'operation-not-allowed':
-          return 'Registro temporariamente desabilitado.\nTente novamente mais tarde.';
-        default:
-          return 'Erro ao registrar: ${e.message}';
-      }
+      // IMPORTANTE: Faz o Firebase recarregar os dados do usuário!
+      await _auth.currentUser!.reload();
+
+      // Agora pega o usuário ATUALIZADO
+      usuario = _auth.currentUser;
+
+      // Log de debug
+      print("Nome salvo no Firebase: ${usuario?.displayName}");
+
+      notifyListeners();
+      return null;
     } catch (e) {
-      return 'Erro inesperado: $e';
+      return e.toString();
     }
   }
 

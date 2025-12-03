@@ -101,7 +101,9 @@ class _LoginPageState extends State<LoginPage> {
       final erro = await authService.registrar(
         email: email.text.trim(),
         senha: senha.text,
+        nome: nome.text.trim(),
       );
+
 
       if (mounted) {
         if (erro != null) {

@@ -34,6 +34,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     final ttsService = context.watch<TtsService>();
     final usuario = authService.usuario;
     final perfilAtivo = perfilService.perfilAtivo;
+    final nomeUsuario = usuario?.displayName ?? usuario?.email ?? 'Usuário';
 
     return Scaffold(
       appBar: AppBar(
@@ -45,7 +46,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
         children: [
           // USUÁRIO
           _buildSecaoHeader('Usuário', Icons.person),
-          _buildCardUsuario(usuario?.email ?? 'Não logado', usuario?.uid),
+          _buildCardUsuario(nomeUsuario, usuario?.email),
 
           const SizedBox(height: 16),
 
@@ -122,7 +123,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     );
   }
 
-  Widget _buildCardUsuario(String email, String? uid) {
+  Widget _buildCardUsuario(String nomeUsuario, String? email) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       elevation: 2,
@@ -149,7 +150,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Email',
+                        'Usuário',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -158,9 +159,9 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        email,
+                        nomeUsuario,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
@@ -171,35 +172,28 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                 ),
               ],
             ),
-            if (uid != null) ...[
-              const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Text(
-                    'ID: ',
+
+            const SizedBox(height: 12),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            Row(
+              children: [
+                const Icon(Icons.email, size: 16, color: Colors.grey),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    email ?? 'Email não disponível',
                     style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                      color: Colors.grey[700],
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Expanded(
-                    child: Text(
-                      uid,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[600],
-                        fontFamily: 'monospace',
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -383,73 +377,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                 ),
                 const SizedBox(height: 8),
                 const SizedBox(height: 12),
-
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    // Verifica se vozes estão instaladas
-                    final ttsService = context.read<TtsService>();
-                    final temVozes = await ttsService.verificarVozesInstaladas();
-
-                    if (!temVozes) {
-                      // Mostra dialog explicativo
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Row(
-                            children: [
-                              Icon(Icons.warning, color: Colors.orange),
-                              SizedBox(width: 12),
-                              Text('Vozes Não Instaladas'),
-                            ],
-                          ),
-                          content: const Text(
-                            'Para o TTS funcionar corretamente, você precisa instalar as vozes em Português.\n\n'
-                                'Vamos abrir as configurações do sistema para você baixar as vozes.\n\n'
-                                'Procure por "Português (Brasil)" e faça o download.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancelar'),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                await ttsService.abrirConfiguracoesTTS();
-                              },
-                              icon: const Icon(Icons.download),
-                              label: const Text('Instalar Vozes'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo[700],
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.white),
-                              SizedBox(width: 12),
-                              Text('Vozes já instaladas!'),
-                            ],
-                          ),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.download_outlined),
-                  label: const Text('Instalar Vozes PT-BR'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.indigo[700],
-                    side: BorderSide(color: Colors.indigo[300]!),
-                    minimumSize: const Size(double.infinity, 45),
-                  ),
-                ),
               ],
             ),
           ),
@@ -537,7 +464,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             children: [
               Icon(Icons.logout, color: Colors.red[700]),
               const SizedBox(width: 12),
-              const Text('Sair da Conta'),
+              const Text('Sair'),
             ],
           ),
           content: const Text(

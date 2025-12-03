@@ -8,8 +8,10 @@ import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'dart:collection';
 
-/// Tela principal que gerencia as categorias e botões de comunicação
+
+// Tela principal que gerencia as categorias e botões de comunicação
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -17,7 +19,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // VARIÁVEIS DE ESTADO E CONTROLADORES
   late TabController tabController;
   Orientation? _currentOrientation;
@@ -25,62 +27,87 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   final Map<String, GlobalKey> _categoryKeys = {};
   String _textoFalado = '';
 
-  // DADOS DAS CATEGORIAS E BOTÕES PREDEFINIDOS
-  final Map<String, List<BotaoAAC>> categorias = {
-    'Ações': [
-      BotaoAAC('quero', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/quero.png'),
-      BotaoAAC('comer', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/comer.png'),
-      BotaoAAC('beber', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/beber.png'),
-      BotaoAAC('dormir', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/dormir.png'),
-      BotaoAAC('ir', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/ir.png'),
-    ],
-    'Pessoas': [
-      BotaoAAC('Eu', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/eu.png'),
-      BotaoAAC('você', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/voce.png'),
-      BotaoAAC('mamãe', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/mamae.png'),
-      BotaoAAC('papai', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/papai.png'),
-    ],
-    'Objetos': [
-      BotaoAAC('água', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/agua.png'),
-      BotaoAAC('leite', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/leite.png'),
-      BotaoAAC('brinquedo', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/brinquedo.png'),
-      BotaoAAC('bola', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/bola.png'),
-    ],
-    'Emoções': [
-      BotaoAAC('feliz', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/feliz.png'),
-      BotaoAAC('triste', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/triste.png'),
-      BotaoAAC('nervoso', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/nervoso.png'),
-      BotaoAAC('ansioso', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/ansioso.png'),
-    ],
-    'Negação': [
-      BotaoAAC('não', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/nao.png'),
-      BotaoAAC('pare', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/pare.png'),
-      BotaoAAC('acabou', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/acabou.png'),
-    ],
-    'Outros': [],
+  //Categorias Fixas
+  final Set<String> categoriasFixas = {
+    'Ações',
+    'Pessoas',
+    'Objetos',
+    'Emoções',
+    'Negação',
   };
+
+  //Cores Categorias
+  final Map<String, Color> corDasCategorias = {
+    'Ações': Colors.orange,
+    'Pessoas': Colors.blue,
+    'Objetos': Colors.teal,
+    'Emoções': Colors.lightGreen,
+    'Negação': Colors.red,
+  };
+
+  // DADOS DAS CATEGORIAS E BOTÕES PREDEFINIDOS
+  final LinkedHashMap<String, List<BotaoAAC>> categorias = LinkedHashMap<String, List<BotaoAAC>>();
 
   @override
   void initState() {
     super.initState();
+
+    // 🔥 Inicializa as categorias em ordem fixa
+    categorias.addAll({
+      'Ações': [
+        BotaoAAC('quero', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/quero.png'),
+        BotaoAAC('comer', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/comer.png'),
+        BotaoAAC('beber', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/beber.png'),
+        BotaoAAC('dormir', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/dormir.png'),
+        BotaoAAC('ir', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/ir.png'),
+      ],
+      'Pessoas': [
+        BotaoAAC('Eu', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/eu.png'),
+        BotaoAAC('você', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/voce.png'),
+        BotaoAAC('mamãe', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/mamae.png'),
+        BotaoAAC('papai', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/papai.png'),
+      ],
+      'Objetos': [
+        BotaoAAC('água', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/agua.png'),
+        BotaoAAC('leite', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/leite.png'),
+        BotaoAAC('brinquedo', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/brinquedo.png'),
+        BotaoAAC('bola', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/bola.png'),
+      ],
+      'Emoções': [
+        BotaoAAC('feliz', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/feliz.png'),
+        BotaoAAC('triste', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/triste.png'),
+        BotaoAAC('nervoso', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/nervoso.png'),
+        BotaoAAC('ansioso', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/ansioso.png'),
+      ],
+      'Negação': [
+        BotaoAAC('não', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/nao.png'),
+        BotaoAAC('pare', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/pare.png'),
+        BotaoAAC('acabou', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/acabou.png'),
+      ],
+    });
+
+    // 🔥 Cria TabController com ordem garantida
     tabController = TabController(length: categorias.length, vsync: this);
 
-    // Limpa botões não-fixos antes de carregar
+    // 🔥 Limpa botões não fixos antes de carregar personalizados
     categorias.forEach((categoria, botoes) {
       botoes.removeWhere((botao) => !botao.isFixo);
     });
 
     _carregarConfigsSalvas();
 
-    for (String categoria in categorias.keys) {
-      _categoryKeys[categoria] = GlobalKey();
-    }
+    // 🔥 Recria keys SEMPRE seguindo a ordem correta
+    categorias.keys.forEach((key) {
+      _categoryKeys[key] = GlobalKey();
+    });
 
-    // LISTENER DO TABCONTROLLER
+    // 🔥 Listener do TabController sem overflow
     tabController.addListener(() {
-      if (tabController.indexIsChanging) {
+      if (!tabController.indexIsChanging) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         _scrollToCategory(tabController.index);
-      }
+      });
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -121,27 +148,36 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     try {
       final perfilService = context.read<PerfilService>();
 
-      // USA A VERSÃO ASSÍNCRONA
+      // 🔥 1) Carrega categorias salvas
+      final coresSalvas = await perfilService.carregarCategoriasPerfilAtivo();
+
+      coresSalvas.forEach((nome, cor) {
+        if (!categorias.containsKey(nome)) {
+          categorias[nome] = [];
+        }
+        corDasCategorias[nome] = cor;
+      });
+
+      // 🔥 2) Continua carregando os botões personalizados
       final botoesPersonalizados = await perfilService.getBotoesPerfilAtivoAsync();
 
-      // Remove TODOS os botões não-fixos antes de carregar os novos
       categorias.forEach((categoria, botoes) {
         botoes.removeWhere((botao) => !botao.isFixo);
       });
 
-      // Adiciona apenas os botões personalizados (não-fixos) do perfil
       botoesPersonalizados.forEach((categoria, botoes) {
         if (categorias.containsKey(categoria)) {
-          // Garante que só adiciona botões não-fixos
           final botoesNaoFixos = botoes.where((botao) => !botao.isFixo).toList();
           categorias[categoria]!.addAll(botoesNaoFixos);
         }
       });
 
       if (mounted) setState(() {});
-      print('✅ Botões personalizados carregados com sucesso!');
+
+      print('Categorias e botões carregados com sucesso!');
+
     } catch (e) {
-      print('❌ Erro ao carregar botões personalizados: $e');
+      print('Erro ao carregar configs: $e');
     }
   }
 
@@ -153,7 +189,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   // NAVEGAÇÃO E SCROLL
   void _scrollToCategory(int index) {
-    if (!_scrollController.hasClients) return;
+    // SE A ÁRVORE AINDA NÃO EXISTE = NÃO ROLE NADA
+    if (!mounted || !_scrollController.hasClients) return;
+
+    // Se a lista ainda não foi construída, evita cálculo de altura inválido
+    if (_categoryKeys.isEmpty || categorias.isEmpty) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
@@ -198,6 +238,35 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void _configureOrientationListener() {
     // Implementação futura
   }
+
+  void _updateTabControllerIfNeeded({int? preferIndex}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final newLength = categorias.length;
+
+      if (tabController.length == newLength) return;
+
+      final safeIndex = (preferIndex ?? tabController.index).clamp(0, newLength - 1);
+
+      tabController.dispose(); // agora é seguro porque temos TickerProviderStateMixin
+
+      tabController = TabController(
+        length: newLength,
+        vsync: this,
+        initialIndex: safeIndex,
+      );
+
+      tabController.addListener(() {
+        if (tabController.indexIsChanging) {
+          _scrollToCategory(tabController.index);
+        }
+      });
+
+      setState(() {}); // força rebuild
+    });
+  }
+
 
   // MANIPULAÇÃO DE FALA
   void falarPalavra(String palavra) {
@@ -244,9 +313,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
             ElevatedButton(
               onPressed: () async {
+                _scrollController.jumpTo(0);
                 setState(() {
                   categorias[categoriaEncontrada!]!.remove(botao);
                 });
+                // Garantir tabs atualizadas
+                _updateTabControllerIfNeeded(
+                  preferIndex: categorias.keys.toList().indexOf(categoriaEncontrada!),
+                );
+
                 await _salvarBotoesPersonalizados();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -262,12 +337,157 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  void _mostrarDialogoCriarCategoria(VoidCallback? onCategoriacriada) {
+    final nomeController = TextEditingController();
+    Color corSelecionada = Colors.purple;
+
+    final coresDisponiveis = [
+      Colors.purple,
+      Colors.indigo,
+      Colors.brown,
+      Colors.deepPurple,
+      Colors.deepOrange,
+      Colors.amber,
+      Colors.cyan,
+      Colors.pink,
+      Colors.lime,
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(Icons.create_new_folder, color: Colors.green),
+                  SizedBox(width: 12),
+                  Text('Nova Categoria', style: TextStyle(fontSize: 18)),
+                ],
+              ),
+
+              ///🔥 AQUI ESTÁ O CONTEÚDO CORRIGIDO
+              content: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  maxWidth: MediaQuery.of(context).size.width * 0.85,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: nomeController,
+                        decoration: InputDecoration(
+                          labelText: 'Nome da categoria',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: const Icon(Icons.label),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        textCapitalization: TextCapitalization.words,
+                        autofocus: true,
+                      ),
+                      const SizedBox(height: 20),
+                      const Divider(),
+                      const SizedBox(height: 12),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Cor da categoria:',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: coresDisponiveis.map((cor) {
+                          final isSelected = cor == corSelecionada;
+                          return InkWell(
+                            onTap: () => setDialogState(() => corSelecionada = cor),
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: cor,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isSelected ? Colors.black : Colors.white,
+                                  width: isSelected ? 3 : 2,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check, color: Colors.white)
+                                  : null,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text("Criar"),
+                  onPressed: () {
+                    final nome = nomeController.text.trim();
+
+                    if (nome.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Digite o nome da categoria")),
+                      );
+                      return;
+                    }
+
+                    if (categorias.containsKey(nome)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Essa categoria já existe")),
+                      );
+                      return;
+                    }
+
+                    // Atualiza apenas o mapa
+                    _scrollController.jumpTo(0);
+                    setState(() {
+                      categorias[nome] = [];
+                      corDasCategorias[nome] = corSelecionada;
+                    });
+                    context.read<PerfilService>().salvarCategoriasPerfilAtivo(corDasCategorias);
+                    _updateTabControllerIfNeeded(preferIndex: categorias.length - 1);
+
+                    Navigator.pop(dialogContext);
+
+                    // Atualiza drop-down do diálogo de adicionar botão
+                    if (onCategoriacriada != null) onCategoriacriada!();
+                  },
+                )
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void mostrarDialogoAdicionarBotao() {
+    print("Qtd categorias = ${categorias.length}");
+
     final labelController = TextEditingController();
     final orientation = MediaQuery.of(context).orientation;
 
     IconData iconSelecionado = Icons.star;
-    Color corSelecionada = Colors.orange;
     String categoriaSelecionada = categorias.keys.first;
     String? imagemSelecionada;
 
@@ -287,42 +507,32 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'Celular': Icons.smartphone,
     };
 
-    // Mapa de categoria para cor fixa
-    final Map<String, Color> corPorCategoria = {
-      'Ações': Colors.orange,
-      'Pessoas': Colors.blue,
-      'Objetos': Colors.teal,
-      'Emoções': Colors.lightGreen,
-      'Negação': Colors.red,
-      'Outros': Colors.grey,
-    };
-
     String iconeSelecionadoNome = 'Estrela';
-    String corSelecionadaNome = 'Laranja';
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (stateContext, setDialogState) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-                title: const Center(
-                  child: Text(
-                    'Criar novo botão',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+              title: const Center(
+                child: Text(
+                  'Criar novo botão',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              content: SingleChildScrollView(
-                child: SizedBox(
-                  width: orientation == Orientation.portrait
-                      ? MediaQuery.of(context).size.width * 0.8
-                      : MediaQuery.of(context).size.width * 0.5,
+              ),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.75,
+                  maxWidth: MediaQuery.of(context).size.width * 0.85,
+                ),
+                child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -339,46 +549,52 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                         textCapitalization: TextCapitalization.sentences,
                       ),
+
                       const SizedBox(height: 20),
                       const Divider(),
                       const SizedBox(height: 16),
+
+                      // CATEGORIA
                       Row(
                         children: [
                           Icon(Icons.category, size: 20, color: Colors.indigo[700]),
                           const SizedBox(width: 8),
-                          const Text(
-                            'Categoria:',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          const Text('Categoria:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                          const Spacer(),
+
+                          TextButton.icon(
+                            onPressed: () {
+                              _mostrarDialogoCriarCategoria(() {
+                                setState(() {});
+                                setDialogState(() {});
+                              });
+                            },
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('Nova', style: TextStyle(fontSize: 13)),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.green[700],
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            ),
                           ),
                         ],
                       ),
+
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: categoriaSelecionada,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                        isExpanded: true,
-                        items: categorias.keys
-                            .map((cat) => DropdownMenuItem(
-                          value: cat,
-                          child: Text(cat, style: const TextStyle(fontSize: 15)),
-                        ))
-                            .toList(),
+                        items: categorias.keys.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
                         onChanged: (String? valor) {
                           setDialogState(() {
                             categoriaSelecionada = valor ?? categorias.keys.first;
                           });
                         },
                       ),
+
                       const SizedBox(height: 20),
                       const Divider(),
                       const SizedBox(height: 16),
+
+                      // Imagem (Opcional)
                       Row(
                         children: [
                           Icon(Icons.image, size: 20, color: Colors.indigo[700]),
@@ -455,6 +671,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       const SizedBox(height: 20),
                       const Divider(),
                       const SizedBox(height: 16),
+
+                      // Ícone
                       Row(
                         children: [
                           Icon(Icons.star, size: 20, color: Colors.indigo[700]),
@@ -496,57 +714,59 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           });
                         },
                       ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(dialogContext),
                   child: const Text('Cancelar'),
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
                     if (labelController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Digite o texto do botão'),
-                          backgroundColor: Colors.red,
-                        ),
+                        const SnackBar(content: Text('Digite o texto do botão')),
                       );
                       return;
                     }
 
-                    setState(() {
-                      final corDaCategoria = corPorCategoria[categoriaSelecionada] ?? Colors.grey;
+                    final corDaCategoria = corDasCategorias[categoriaSelecionada] ?? Colors.grey;
 
-                      categorias[categoriaSelecionada]!.add(
-                        BotaoAAC(
-                          labelController.text.trim(),
-                          imagemSelecionada == null ? iconSelecionado : null,
-                          corDaCategoria,
-                          imagePath: imagemSelecionada,
+                    final novoBotao = BotaoAAC(
+                      labelController.text.trim(),
+                      imagemSelecionada == null ? iconSelecionado : null,
+                      corDaCategoria,
+                      imagePath: imagemSelecionada,
+                    );
+
+                    Navigator.pop(dialogContext);
+
+                    // ⚠ Garantir Tabs antes de alterar UI
+                    _updateTabControllerIfNeeded(
+                      preferIndex: categorias.keys.toList().indexOf(categoriaSelecionada),
+                    );
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) async {
+                      if (!mounted) return;
+
+                      _scrollController.jumpTo(0);
+                      setState(() {
+                        categorias[categoriaSelecionada]!.add(novoBotao);
+                      });
+
+                      await _salvarBotoesPersonalizados();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Botão "${labelController.text.trim()}" criado!'),
+                          backgroundColor: Colors.green[700],
                         ),
                       );
                     });
-                    await _salvarBotoesPersonalizados();
-                    Navigator.pop(context);
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(Icons.check_circle, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text('Botão "${labelController.text.trim()}" criado!'),
-                          ],
-                        ),
-                        backgroundColor: Colors.green[700],
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
                   },
+
                   icon: const Icon(Icons.check),
                   label: const Text('Criar Botão'),
                   style: ElevatedButton.styleFrom(
@@ -562,6 +782,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
     );
   }
+
   // CONSTRUÇÃO DA INTERFACE
   @override
   Widget build(BuildContext context) {
@@ -786,103 +1007,73 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
             ),
           ),
-          body: OrientationBuilder(
-            builder: (context, orientation) {
-              return Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.all(8.0),
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white60,
-                      border: Border.all(color: Colors.grey[400]!),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _textoFalado.isEmpty ? 'Clique em um botão para falar...' : _textoFalado,
-                            style: TextStyle(
-                              fontSize: orientation == Orientation.portrait ? 18 : 16,
-                              fontWeight: FontWeight.w500,
-                              color: _textoFalado.isEmpty ? Colors.grey[600] : Colors.black87,
-                            ),
-                          ),
-                        ),
-                        if (_textoFalado.isNotEmpty)
-                          IconButton(
-                            onPressed: _limparTexto,
-                            icon: Icon(Icons.clear, color: Colors.grey[600]),
-                            tooltip: 'Limpar texto',
-                          ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      controller: _scrollController,
-                      padding: EdgeInsets.only(
-                        bottom: 20,
-                      ),
-                      children: [
-                        for (var categoria in categorias.keys)
-                          Column(
-                            key: _categoryKeys[categoria],
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  12.0,
-                                  categoria == categorias.keys.first ? 8 : 0,
-                                  12.0,
-                                  orientation == Orientation.portrait ? 8 : 6,
-                                ),
-                                child: Text(
-                                  categoria,
-                                  style: TextStyle(
-                                    fontSize: orientation == Orientation.portrait ? 20 : 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final orientation = MediaQuery.of(context).orientation;
+              final crossAxisCount = orientation == Orientation.portrait ? 3 : 5;
 
-                              if (categorias[categoria]!.isEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  child: Text(
-                                    'Ainda não há botões criados nesta categoria.\nToque no + para adicionar botões aqui.',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontStyle: FontStyle.normal,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.only(bottom: 20),
+                itemCount: categorias.length + 1, // +1 para barra de fala
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _buildBarraFala(orientation);
+                  }
 
-                              if (categorias[categoria]!.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: GridView.count(
+                  final categoria = categorias.keys.elementAt(index - 1);
+                  final botoes = categorias[categoria]!;
+
+                  // DEBUG — ver categoria quebrada
+                  if (botoes.contains(null)) {
+                    print("❌ ERRO: Categoria '$categoria' contém NULL");
+                  }
+                  if (categoria.isEmpty) {
+                    print("❌ ERRO: Existe categoria vazia ('')");
+                  }
+                  if (categoria.trim().isEmpty) {
+                    print("❌ ERRO: Categoria com nome só de espaços");
+                  }
+                  for (var b in botoes) {
+                    if (b.label.trim().isEmpty) {
+                      print("❌ ERRO: Botão sem texto na categoria '$categoria'");
+                    }
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTituloCategoria(categoria, orientation),
+                      botoes.isEmpty
+                          ? _buildCategoriaVazia()
+                          : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minHeight: 0,
+                            maxHeight: double.infinity,
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, box) {
+                              return GridView.builder(
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: crossAxisCount,
-                                  mainAxisSpacing: orientation == Orientation.portrait ? 10 : 8,
-                                  crossAxisSpacing: orientation == Orientation.portrait ? 10 : 8,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
                                   childAspectRatio: orientation == Orientation.portrait ? 1.0 : 1.4,
-                                  children: categorias[categoria]!
-                                      .map((btn) => _buildBotaoComunicacao(btn, orientation))
-                                      .toList(),
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
                                 ),
-                              ),
-                              const SizedBox(height: 0),
-                            ],
+                                itemCount: botoes.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (_, i) => _buildBotaoComunicacao(botoes[i], orientation),
+                              );
+                            },
                           ),
-                      ],
-                    ),
-                  ),
-                ],
+                        )
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -891,60 +1082,120 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildBotaoComunicacao(BotaoAAC btn, Orientation orientation) {
-    // Ajusta tamanhos baseado na orientação
-    double iconSize = orientation == Orientation.portrait ? 36 : 32;
-    double imageSize = orientation == Orientation.portrait ? 73 : 55;
-    double fontSize = orientation == Orientation.portrait ? 18 : 14;
-    double paddingButton = orientation == Orientation.portrait ? 8 : 6;
-    double spacingIconText = orientation == Orientation.portrait ? 10 : 6;
+  Widget _buildBarraFala(Orientation orientation) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white60,
+        border: Border.all(color: Colors.grey[400]!),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _textoFalado.isEmpty
+                  ? 'Clique em um botão para falar...'
+                  : _textoFalado,
+              style: TextStyle(
+                fontSize: orientation == Orientation.portrait ? 18 : 16,
+                fontWeight: FontWeight.w500,
+                color: _textoFalado.isEmpty
+                    ? Colors.grey[600]
+                    : Colors.black87,
+              ),
+            ),
+          ),
+          if (_textoFalado.isNotEmpty)
+            IconButton(
+              onPressed: _limparTexto,
+              icon: Icon(Icons.clear, color: Colors.grey[600]),
+            ),
+        ],
+      ),
+    );
+  }
 
-    return GestureDetector(
-      onLongPress: () => _mostrarDialogoExcluirBotao(btn),
+  Widget _buildTituloCategoria(String categoria, Orientation orientation) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        12.0,
+        categoria == categorias.keys.first ? 8 : 0,
+        12.0,
+        orientation == Orientation.portrait ? 8 : 6,
+      ),
+      child: Text(
+        categoria,
+        style: TextStyle(
+          fontSize: orientation == Orientation.portrait ? 20 : 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoriaVazia() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        'Ainda não há botões criados nesta categoria.\nToque no + para adicionar botões aqui.',
+        style: TextStyle(
+          fontSize: 18,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBotaoComunicacao(BotaoAAC btn, Orientation orientation) {
+    final double cardMaxHeight = orientation == Orientation.portrait ? 150 : 120;
+
+    return SizedBox(
+      height: cardMaxHeight,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: btn.color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: EdgeInsets.all(paddingButton),
-          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.all(6),
         ),
         onPressed: () => falarPalavra(btn.label),
+        onLongPress: () => _mostrarDialogoExcluirBotao(btn),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Imagem ou Ícone
-            if (btn.imagePath != null)
-              Flexible(
-                child: btn.imagePath!.startsWith('assets/')
-                    ? Image.asset(
-                  btn.imagePath!,
-                  height: imageSize,
-                  fit: BoxFit.contain,
-                )
-                    : Image.file(
-                  File(btn.imagePath!),
-                  height: imageSize,
-                  fit: BoxFit.contain,
+            // IMAGEM OU ÍCONE COM ALTURA LIMITADA
+            SizedBox(
+              height: orientation == Orientation.portrait ? 60 : 45,
+              child: btn.imagePath != null
+                  ? (btn.imagePath!.startsWith('assets/')
+                  ? Image.asset(btn.imagePath!, fit: BoxFit.contain)
+                  : Image.file(File(btn.imagePath!), fit: BoxFit.contain))
+                  : Icon(
+                       btn.icon,
+                       size: orientation == Orientation.portrait ? 34 : 28,
+                       color: Colors.black87,)
+            ),
+
+            const SizedBox(height: 6),
+
+            // TEXTO LIMITADO
+            SizedBox(
+              height: orientation == Orientation.portrait ? 40 : 28,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  btn.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: orientation == Orientation.portrait ? 18 : 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
-              )
-            else
-              Icon(btn.icon, size: iconSize, color: Colors.black87),
-
-            SizedBox(height: spacingIconText),
-
-            // Texto
-            Text(
-              btn.label,
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
               ),
-              textAlign: TextAlign.center,
-              maxLines: orientation == Orientation.portrait ? 2 : 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

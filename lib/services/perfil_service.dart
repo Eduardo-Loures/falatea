@@ -354,4 +354,30 @@ class PerfilService extends ChangeNotifier {
       return {};
     }
   }
+
+  Future<void> salvarCategoriasPerfilAtivo(Map<String, Color> categorias) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final categoriasConvertidas = categorias.map(
+          (nome, cor) => MapEntry(nome, cor.value),
+    );
+
+    await prefs.setString('categorias_${perfilAtivo!.id}',
+        jsonEncode(categoriasConvertidas));
+  }
+
+  Future<Map<String, Color>> carregarCategoriasPerfilAtivo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('categorias_${perfilAtivo!.id}');
+
+    if (jsonString == null) return {};
+
+    final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+
+    return decoded.map(
+          (nome, corValue) => MapEntry(nome, Color(corValue)),
+    );
+  }
+
+
 }
