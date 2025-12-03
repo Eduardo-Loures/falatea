@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:provider/provider.dart';
+import 'package:projeto/pages/home_page.dart';
+import 'package:projeto/pages/selecao_perfil_page.dart';
+import 'package:projeto/services/perfil_service.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -75,6 +79,26 @@ class _LoginPageState extends State<LoginPage> {
             duration: const Duration(seconds: 4),
           ),
         );
+      } else {
+        //LOGIN OK agora decidimos pra onde ir
+        final perfilService = context.read<PerfilService>();
+        await perfilService.carregarDadosUsuario();
+
+        if (!mounted) return;
+
+        if (!perfilService.temPerfis) {
+          //Sem perfis vai para a criação/seleção
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
+          );
+        } else {
+          //Já possui perfis vai para Home
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
+        }
       }
 
     } catch (e) {
@@ -104,7 +128,6 @@ class _LoginPageState extends State<LoginPage> {
         nome: nome.text.trim(),
       );
 
-
       if (mounted) {
         if (erro != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -132,6 +155,26 @@ class _LoginPageState extends State<LoginPage> {
               duration: const Duration(seconds: 3),
             ),
           );
+
+          // Após registrar, verificar perfis
+          final perfilService = context.read<PerfilService>();
+          await perfilService.carregarDadosUsuario();
+
+          if (!mounted) return;
+
+          if (!perfilService.temPerfis) {
+            // Não tem perfis ainda ir para seleção
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
+            );
+          } else {
+            // Já tem perfis
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          }
         }
       }
 
@@ -150,7 +193,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // NOVA: Validação de nome
+  // Validação de nome
   String? validateNome(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Informe seu nome';

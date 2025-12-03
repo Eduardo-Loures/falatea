@@ -19,6 +19,16 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+class HomePageStateStatic {
+  static const categoriasFixas = {
+    'Ações',
+    'Pessoas',
+    'Objetos',
+    'Emoções',
+    'Negação',
+  };
+}
+
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // VARIÁVEIS DE ESTADO E CONTROLADORES
   late TabController tabController;
@@ -52,7 +62,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // 🔥 Inicializa as categorias em ordem fixa
+    // Inicializa as categorias em ordem fixa
     categorias.addAll({
       'Ações': [
         BotaoAAC('quero', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/quero.png'),
@@ -86,22 +96,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ],
     });
 
-    // 🔥 Cria TabController com ordem garantida
+    // Cria TabController com ordem garantida
     tabController = TabController(length: categorias.length, vsync: this);
 
-    // 🔥 Limpa botões não fixos antes de carregar personalizados
+    // Limpa botões não fixos antes de carregar personalizados
     categorias.forEach((categoria, botoes) {
       botoes.removeWhere((botao) => !botao.isFixo);
     });
 
     _carregarConfigsSalvas();
 
-    // 🔥 Recria keys SEMPRE seguindo a ordem correta
+    // Recria keys SEMPRE seguindo a ordem correta
     categorias.keys.forEach((key) {
       _categoryKeys[key] = GlobalKey();
     });
 
-    // 🔥 Listener do TabController sem overflow
+    //Listener do TabController sem overflow
     tabController.addListener(() {
       if (!tabController.indexIsChanging) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -112,15 +122,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _configureOrientationListener();
+      context.read<PerfilService>().addListener(_onPerfilServiceChanged);
     });
   }
 
   @override
   void dispose() {
+    // remove listener antes de descartar
+    try {
+      context.read<PerfilService>().removeListener(_onPerfilServiceChanged);
+    } catch (_) {}
     tabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
+
 
   // PERSISTÊNCIA DE DADOS
   Future<void> _salvarBotoesPersonalizados() async {
@@ -148,7 +164,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     try {
       final perfilService = context.read<PerfilService>();
 
-      // 🔥 1) Carrega categorias salvas
+      //Carrega categorias salvas
       final coresSalvas = await perfilService.carregarCategoriasPerfilAtivo();
 
       coresSalvas.forEach((nome, cor) {
@@ -158,7 +174,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         corDasCategorias[nome] = cor;
       });
 
-      // 🔥 2) Continua carregando os botões personalizados
+      // Continua carregando os botões personalizados
       final botoesPersonalizados = await perfilService.getBotoesPerfilAtivoAsync();
 
       categorias.forEach((categoria, botoes) {
@@ -185,6 +201,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final perfilService = context.read<PerfilService>();
     await perfilService.salvarBotoesPerfilAtivo({});
     print('Dados do perfil atual limpos!');
+  }
+
+  void _onPerfilServiceChanged() {
+    // chama o metodo que já carrega categorias e botões salvos
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _carregarConfigsSalvas();
+    });
   }
 
   // NAVEGAÇÃO E SCROLL
@@ -328,8 +352,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SnackBar(content: Text('Botão excluído com sucesso!')),
                 );
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Excluir'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30), // o
+                ),
+              ),
+              child: const Text("Excluir"),
             ),
           ],
         );
@@ -476,6 +507,82 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _mostrarDialogoExcluirCategoria(String categoria) {
+    // Impede excluir categorias fixas
+    if (categoriasFixas.contains(categoria)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Categorias fixas não podem ser excluídas.")),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.delete_forever, color: Colors.red[700]),
+              const SizedBox(width: 12),
+              Text("Excluir categoria"),
+            ],
+          ),
+          content: Text(
+            'Tem certeza que deseja excluir a categoria "$categoria"?\n'
+                'Todos os botões dentro dela também serão removidos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+
+                // Reseta scroll antes de mudar árvore (evita overflow)
+                _scrollController.jumpTo(0);
+
+                setState(() {
+                  categorias.remove(categoria);
+                  corDasCategorias.remove(categoria);
+                  _categoryKeys.remove(categoria);
+                });
+
+                _updateTabControllerIfNeeded();
+
+                // Salva categorias atualizadas
+                context
+                    .read<PerfilService>()
+                    .salvarCategoriasPerfilAtivo(corDasCategorias);
+
+                // Salva botões atualizados
+                await _salvarBotoesPersonalizados();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Categoria "$categoria" excluída!'),
+                    backgroundColor: Colors.red[700],
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text("Excluir"),
+            ),
+          ],
         );
       },
     );
@@ -964,16 +1071,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
-                    value: 'limpar_dados',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_forever, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Limpar Botões'),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ],
@@ -1126,15 +1223,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         12.0,
         orientation == Orientation.portrait ? 8 : 6,
       ),
-      child: Text(
-        categoria,
-        style: TextStyle(
-          fontSize: orientation == Orientation.portrait ? 20 : 18,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              categoria,
+              style: TextStyle(
+                fontSize: orientation == Orientation.portrait ? 20 : 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
 
   Widget _buildCategoriaVazia() {
     return const Padding(
@@ -1173,9 +1277,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ? Image.asset(btn.imagePath!, fit: BoxFit.contain)
                   : Image.file(File(btn.imagePath!), fit: BoxFit.contain))
                   : Icon(
-                       btn.icon,
+                       btn.icon ?? Icons.help_outline,
                        size: orientation == Orientation.portrait ? 34 : 28,
-                       color: Colors.black87,)
+                       color: Colors.black87,
+                  )
             ),
 
             const SizedBox(height: 6),

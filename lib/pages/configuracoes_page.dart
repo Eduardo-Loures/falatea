@@ -5,8 +5,9 @@ import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
 import 'package:provider/provider.dart';
+import 'package:projeto/pages/gerenciar_categorias_page.dart';
 
-/// Tela de Configurações do App
+//Tela de Configurações do App
 class ConfiguracoesPage extends StatefulWidget {
   const ConfiguracoesPage({Key? key}) : super(key: key);
 
@@ -67,6 +68,21 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
 
           //AÇÕES
           _buildSecaoHeader('Ações', Icons.settings),
+
+          //Gerenciar categorias
+          _buildBotaoAcao(
+            icon: Icons.folder_open,
+            titulo: 'Gerenciar Categorias',
+            subtitulo: 'Excluir categorias criadas',
+            cor: Colors.orange,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const GerenciarCategoriasPage()),
+              );
+            },
+          ),
+
 
           //Botão Trocar Perfil
           _buildBotaoAcao(
