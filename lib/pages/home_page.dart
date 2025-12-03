@@ -273,7 +273,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       final safeIndex = (preferIndex ?? tabController.index).clamp(0, newLength - 1);
 
-      tabController.dispose(); // agora é seguro porque temos TickerProviderStateMixin
+      tabController.dispose();
 
       tabController = TabController(
         length: newLength,
@@ -399,7 +399,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ],
               ),
 
-              ///🔥 AQUI ESTÁ O CONTEÚDO CORRIGIDO
               content: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.6,
@@ -850,7 +849,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                     Navigator.pop(dialogContext);
 
-                    // ⚠ Garantir Tabs antes de alterar UI
+                    // Garantir Tabs antes de alterar UI
                     _updateTabControllerIfNeeded(
                       preferIndex: categorias.keys.toList().indexOf(categoriaSelecionada),
                     );
@@ -905,7 +904,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         return Scaffold(
           appBar: AppBar(
-            // IMPORTANTE: Reduz a altura do AppBar em landscape
+            // Reduz a altura do AppBar em landscape
             toolbarHeight: isLandscape ? 48 : 56,
             centerTitle: true,
             flexibleSpace: Container(
@@ -928,7 +927,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               },
               tooltip: 'Voltar para seleção',
             ),
-            // MODIFICAÇÃO PRINCIPAL: Mostrar título apenas em portrait
+            // Mostrar título apenas em portrait
             title: isLandscape
                 ? null  // Esconde completamente em landscape
                 : Column(
@@ -1121,22 +1120,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   final categoria = categorias.keys.elementAt(index - 1);
                   final botoes = categorias[categoria]!;
 
-                  // DEBUG — ver categoria quebrada
-                  if (botoes.contains(null)) {
-                    print("❌ ERRO: Categoria '$categoria' contém NULL");
-                  }
-                  if (categoria.isEmpty) {
-                    print("❌ ERRO: Existe categoria vazia ('')");
-                  }
-                  if (categoria.trim().isEmpty) {
-                    print("❌ ERRO: Categoria com nome só de espaços");
-                  }
-                  for (var b in botoes) {
-                    if (b.label.trim().isEmpty) {
-                      print("❌ ERRO: Botão sem texto na categoria '$categoria'");
-                    }
-                  }
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1244,7 +1227,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
-        'Ainda não há botões criados nesta categoria.\nToque no + para adicionar botões aqui.',
+        'Ainda não há botões nesta categoria.\nToque no + para adicionar botões aqui.',
         style: TextStyle(
           fontSize: 18,
           color: Colors.black,
