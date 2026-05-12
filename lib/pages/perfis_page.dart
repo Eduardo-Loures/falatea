@@ -360,7 +360,7 @@ class PerfisPage extends StatelessWidget {
                   onPressed: () async {
                     if (nomeController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Digite o nome do aluno')),
+                        const SnackBar(content: Text('Digite um nome!')),
                       );
                       return;
                     }

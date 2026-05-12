@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:projeto/pages/home_page.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/services/perfil_service.dart';
+import 'package:projeto/pages/modo_page.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -96,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
           //Já possui perfis vai para Home
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HomePage()),
+            MaterialPageRoute(builder: (_) => const ModoPage()),
           );
         }
       }

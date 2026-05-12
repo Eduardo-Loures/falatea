@@ -5,6 +5,7 @@ import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/login_page.dart';
 import 'package:projeto/pages/home_page.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
+import 'package:projeto/pages/modo_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
@@ -53,8 +54,8 @@ class _SplashPageState extends State<SplashPage> {
     // Já tem perfil ativo → ir para Home
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomePage()),
-    );
+      MaterialPageRoute(builder: (_) => const ModoPage()),
+    );;
   }
 
   @override
