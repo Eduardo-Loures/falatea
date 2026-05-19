@@ -29,6 +29,7 @@ flutter:
 
   assets:
     - assets/imagens/
+    - assets/imagens_reais/
 
   fonts:
     - family: WDXLLubrifontTC-Regular

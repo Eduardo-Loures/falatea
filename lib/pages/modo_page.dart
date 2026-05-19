@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:projeto/pages/home_page.dart';
-import 'package:projeto/games/montar_frase_game.dart';
+import 'package:projeto/games/escolher_game.dart';
+import 'package:provider/provider.dart';
+import 'package:projeto/services/perfil_service.dart';
+import 'package:projeto/pages/selecao_perfil_page.dart';
 
 class ModoPage extends StatelessWidget {
 
@@ -110,15 +113,32 @@ class ModoPage extends StatelessWidget {
 
                   cor: Colors.blue,
 
-                  onTap: () {
+                  onTap: () async {
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const HomePage(),
-                      ),
-                    );
+                    final perfilService =
+                    context.read<PerfilService>();
 
+                    await perfilService.carregarDadosUsuario();
+
+                    if (perfilService.temPerfis) {
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const HomePage(),
+                        ),
+                      );
+
+                    } else {
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                          const SelecaoPerfilPage(),
+                        ),
+                      );
+                    }
                   },
                 ),
 
@@ -129,10 +149,10 @@ class ModoPage extends StatelessWidget {
 
                   context: context,
 
-                  titulo: 'Aprender Jogando',
+                  titulo: 'Aprenda Jogando',
 
                   subtitulo:
-                  'Aprenda formando frases e jogando.',
+                  'Evolua relacionando imagens.',
 
                   icon: Icons.psychology_rounded,
 
@@ -144,7 +164,7 @@ class ModoPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                        const MontarFraseGame(),
+                        const EscolherPictogramaGame(),
                       ),
                     );
 

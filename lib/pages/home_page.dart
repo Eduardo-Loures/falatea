@@ -6,7 +6,7 @@ import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
-import 'package:projeto/games/montar_frase_game.dart';
+import 'package:projeto/games/escolher_game.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:collection';

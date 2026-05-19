@@ -16,15 +16,15 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
-  final nome = TextEditingController(); // NOVO
+  final nome = TextEditingController();
   final email = TextEditingController();
   final senha = TextEditingController();
-  final confirmarSenha = TextEditingController(); // NOVO
+  final confirmarSenha = TextEditingController();
 
   bool isLogin = true;
   bool isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true; // NOVO
+  bool _obscureConfirmPassword = true;
 
   late String titulo;
   late String actionButton;
@@ -64,7 +64,9 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => isLoading = true);
 
     try {
-      final authService = context.read<AuthService>();
+
+      final authService =
+      context.read<AuthService>();
 
       final erro = await authService.login(
         email: email.text.trim(),
@@ -72,48 +74,39 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (erro != null && mounted) {
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(erro),
             backgroundColor: Colors.red[700],
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
           ),
         );
+
       } else {
-        //LOGIN OK agora decidimos pra onde ir
-        final perfilService = context.read<PerfilService>();
-        await perfilService.carregarDadosUsuario();
 
         if (!mounted) return;
 
-        if (!perfilService.temPerfis) {
-          //Sem perfis vai para a criação/seleção
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
-          );
-        } else {
-          //Já possui perfis vai para Home
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const ModoPage()),
-          );
-        }
-      }
-
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro inesperado: $e'),
-            backgroundColor: Colors.red[700],
-            behavior: SnackBarBehavior.floating,
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ModoPage(),
           ),
         );
       }
+
+    } catch (e) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro: $e'),
+        ),
+      );
+
     } finally {
-      if (mounted) setState(() => isLoading = false);
+
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
