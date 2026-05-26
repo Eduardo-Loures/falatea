@@ -8,7 +8,6 @@ import 'package:projeto/pages/perfis_page.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:provider/provider.dart';
-import 'package:projeto/pages/modo_page.dart';
 
 /// Tela intermediária para selecionar qual perfil usar
 class SelecaoPerfilPage extends StatelessWidget {

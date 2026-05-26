@@ -15,7 +15,6 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-
   @override
   void initState() {
     super.initState();
@@ -55,7 +54,8 @@ class _SplashPageState extends State<SplashPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const ModoPage()),
-    );;
+    );
+    ;
   }
 
   @override
@@ -77,23 +77,13 @@ class _SplashPageState extends State<SplashPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 20,
-                      offset: Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.record_voice_over,
-                  size: 60,
-                  color: Colors.indigo[700],
+              SizedBox(
+
+                height: 320,
+
+                child: Image.asset(
+                  'assets/logo/falatea.png',
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 40),
@@ -102,22 +92,10 @@ class _SplashPageState extends State<SplashPage> {
                 strokeWidth: 3,
               ),
               const SizedBox(height: 20),
-              Text(
-                'FalaTEA',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2,
-                ),
-              ),
               const SizedBox(height: 8),
               Text(
                 'Carregando...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.white70),
               ),
             ],
           ),

@@ -6,7 +6,6 @@ import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/modo_page.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -64,9 +63,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => isLoading = true);
 
     try {
-
-      final authService =
-      context.read<AuthService>();
+      final authService = context.read<AuthService>();
 
       final erro = await authService.login(
         email: email.text.trim(),
@@ -74,36 +71,22 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (erro != null && mounted) {
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(erro),
-            backgroundColor: Colors.red[700],
-          ),
+          SnackBar(content: Text(erro), backgroundColor: Colors.red[700]),
         );
-
       } else {
-
         if (!mounted) return;
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => const ModoPage(),
-          ),
+          MaterialPageRoute(builder: (_) => const ModoPage()),
         );
       }
-
     } catch (e) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro: $e'),
-        ),
-      );
-
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
     } finally {
-
       if (mounted) {
         setState(() => isLoading = false);
       }
@@ -125,10 +108,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         if (erro != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(erro),
-              backgroundColor: Colors.red[700],
-            ),
+            SnackBar(content: Text(erro), backgroundColor: Colors.red[700]),
           );
         } else {
           // MOSTRA A MENSAGEM DE SUCESSO
@@ -139,7 +119,9 @@ class _LoginPageState extends State<LoginPage> {
                   const Icon(Icons.check_circle, color: Colors.white),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text('Bem-vindo(a), ${nome.text.trim()}!\nConta criada com sucesso.'),
+                    child: Text(
+                      'Bem-vindo(a), ${nome.text.trim()}!\nConta criada com sucesso.',
+                    ),
                   ),
                 ],
               ),
@@ -156,7 +138,6 @@ class _LoginPageState extends State<LoginPage> {
           }
         }
       }
-
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -238,26 +219,16 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo/Ícone do App
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 20,
-                          offset: Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.record_voice_over,
-                      size: 60,
-                      color: Colors.indigo[700],
+                  SizedBox(
+
+                    height: 320,
+
+                    child: Image.asset(
+                      'assets/logo/falatea.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 0),
 
                   // Card do formulário
                   Card(
@@ -276,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                             Text(
                               titulo,
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: 28,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.indigo[700],
                                 letterSpacing: -1.0,
@@ -292,7 +263,7 @@ class _LoginPageState extends State<LoginPage> {
                                 color: Colors.grey[600],
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 18),
 
                             // Campo Nome (apenas no registro)
                             if (!isLogin) ...[
@@ -361,11 +332,15 @@ class _LoginPageState extends State<LoginPage> {
                                 fillColor: Colors.grey[50],
                                 helperText: 'Mínimo 6 caracteres',
                               ),
-                              textInputAction: isLogin ? TextInputAction.done : TextInputAction.next,
+                              textInputAction:
+                                  isLogin
+                                      ? TextInputAction.done
+                                      : TextInputAction.next,
                               validator: validatePassword,
                               enabled: !isLoading,
                               onFieldSubmitted: (_) {
-                                if (isLogin && formKey.currentState!.validate()) {
+                                if (isLogin &&
+                                    formKey.currentState!.validate()) {
                                   login();
                                 }
                               },
@@ -388,7 +363,8 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     onPressed: () {
                                       setState(() {
-                                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                                        _obscureConfirmPassword =
+                                            !_obscureConfirmPassword;
                                       });
                                     },
                                   ),
@@ -416,17 +392,19 @@ class _LoginPageState extends State<LoginPage> {
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
-                                onPressed: isLoading
-                                    ? null
-                                    : () {
-                                  if (formKey.currentState!.validate()) {
-                                    if (isLogin) {
-                                      login();
-                                    } else {
-                                      registrar();
-                                    }
-                                  }
-                                },
+                                onPressed:
+                                    isLoading
+                                        ? null
+                                        : () {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            if (isLogin) {
+                                              login();
+                                            } else {
+                                              registrar();
+                                            }
+                                          }
+                                        },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.indigo[700],
                                   foregroundColor: Colors.white,
@@ -435,34 +413,39 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   elevation: 2,
                                 ),
-                                child: isLoading
-                                    ? SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                )
-                                    : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      isLogin ? Icons.login : Icons.person_add,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      actionButton,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                child:
+                                    isLoading
+                                        ? SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
+                                        )
+                                        : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              isLogin
+                                                  ? Icons.login
+                                                  : Icons.person_add,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              actionButton,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                               ),
                             ),
                           ],
@@ -474,14 +457,17 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Botão de alternância
                   TextButton(
-                    onPressed: isLoading ? null : () {
-                      // Limpa os campos ao trocar
-                      nome.clear();
-                      email.clear();
-                      senha.clear();
-                      confirmarSenha.clear();
-                      setFormAction(!isLogin);
-                    },
+                    onPressed:
+                        isLoading
+                            ? null
+                            : () {
+                              // Limpa os campos ao trocar
+                              nome.clear();
+                              email.clear();
+                              senha.clear();
+                              confirmarSenha.clear();
+                              setFormAction(!isLogin);
+                            },
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
