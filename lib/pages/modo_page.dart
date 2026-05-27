@@ -5,6 +5,7 @@ import 'package:projeto/games/escolher_game.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
+import 'package:projeto/pages/jogos_page.dart';
 
 class ModoPage extends StatelessWidget {
   const ModoPage({super.key});
@@ -106,7 +107,7 @@ class ModoPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const EscolherPictogramaGame(),
+                        builder: (_) => const JogosPage(),
                       ),
                     );
                   },

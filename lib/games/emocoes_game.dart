@@ -1,71 +1,47 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-class EscolherPictogramaGame extends StatefulWidget {
-  const EscolherPictogramaGame({super.key});
+class EmocoesGame extends StatefulWidget {
+  const EmocoesGame({super.key});
 
   @override
-  State<EscolherPictogramaGame> createState() => _EscolherPictogramaGameState();
+  State<EmocoesGame> createState() => _EmocoesGameState();
 }
 
-class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
+class _EmocoesGameState extends State<EmocoesGame>
     with SingleTickerProviderStateMixin {
-  // FASES
-  late List<Map<String, dynamic>> fasesEmbaralhadas;
-
-  final List<Map<String, dynamic>> fases = [
-    {'imagemReal': 'assets/imagens_reais/maca_real.jpg', 'resposta': 'MAÇÃ'},
-
-    {'imagemReal': 'assets/imagens_reais/agua_real.jpg', 'resposta': 'ÁGUA'},
-
-    {'imagemReal': 'assets/imagens_reais/bola_real.jpg', 'resposta': 'BOLA'},
-
-    {'imagemReal': 'assets/imagens_reais/leite_real.png', 'resposta': 'LEITE'},
-
-    {'imagemReal': 'assets/imagens_reais/carro_real.jpg', 'resposta': 'CARRO'},
-
-    {'imagemReal': 'assets/imagens_reais/pao_real.jpg', 'resposta': 'PÃO'},
-
-    {'imagemReal': 'assets/imagens_reais/suco_real.jpg', 'resposta': 'SUCO'},
-
-    {'imagemReal': 'assets/imagens_reais/cama_real.jpg', 'resposta': 'CAMA'},
-
-    {
-      'imagemReal': 'assets/imagens_reais/caneta_real.jpg',
-      'resposta': 'CANETA',
-    },
-  ];
-
-  // PICTOGRAMAS
-  final List<Map<String, String>> pictogramas = [
-    {'texto': 'MAÇÃ', 'imagem': 'assets/imagens/maca.png'},
-
-    {'texto': 'ÁGUA', 'imagem': 'assets/imagens/agua.png'},
-
-    {'texto': 'BOLA', 'imagem': 'assets/imagens/bola.png'},
-
-    {'texto': 'LEITE', 'imagem': 'assets/imagens/leite.png'},
-
-    {'texto': 'CARRO', 'imagem': 'assets/imagens/carro.png'},
-
-    {'texto': 'PÃO', 'imagem': 'assets/imagens/pao.png'},
-
-    {'texto': 'SUCO', 'imagem': 'assets/imagens/suco.png'},
-
-    {'texto': 'CAMA', 'imagem': 'assets/imagens/cama.png'},
-
-    {'texto': 'CANETA', 'imagem': 'assets/imagens/caneta.png'},
-  ];
-
-  int faseAtual = 0;
-  int estrelas = 0;
-
-  bool ajudaAtivada = false;
+  final FlutterTts flutterTts = FlutterTts();
 
   late AnimationController _controller;
 
-  final FlutterTts flutterTts = FlutterTts();
+  bool ajudaAtivada = false;
+
+  int estrelas = 0;
+
+  int faseAtual = 0;
+
+  final List<Map<String, dynamic>> fases = [
+    {'imagem': 'assets/jogos/emocoes/feliz_real.png', 'resposta': 'FELIZ'},
+
+    {'imagem': 'assets/jogos/emocoes/triste_real.png', 'resposta': 'TRISTE'},
+
+    {'imagem': 'assets/jogos/emocoes/bravo_real.png', 'resposta': 'BRAVO'},
+
+    {'imagem': 'assets/jogos/emocoes/cansado_real.png', 'resposta': 'CANSADO'},
+  ];
+
+  final List<Map<String, String>> opcoes = [
+    {'texto': 'FELIZ', 'imagem': 'assets/jogos/emocoes/feliz.png'},
+
+    {'texto': 'TRISTE', 'imagem': 'assets/jogos/emocoes/triste.png'},
+
+    {'texto': 'BRAVO', 'imagem': 'assets/jogos/emocoes/bravo.png'},
+
+    {'texto': 'CANSADO', 'imagem': 'assets/jogos/emocoes/cansado.png'},
+  ];
+
+  late List<Map<String, dynamic>> fasesEmbaralhadas;
 
   @override
   void initState() {
@@ -77,32 +53,27 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
 
     _controller = AnimationController(
       vsync: this,
+
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
-    falarPalavraAtual();
+    falarEmocaoAtual();
   }
 
-  Future<void> falarPalavraAtual() async {
-    final palavra = fasesEmbaralhadas[faseAtual]['resposta'];
+  Future<void> falarEmocaoAtual() async {
+    final emocao = fasesEmbaralhadas[faseAtual]['resposta'];
 
     await flutterTts.setLanguage('pt-BR');
 
     await flutterTts.setSpeechRate(0.45);
 
-    await flutterTts.speak(palavra);
+    await flutterTts.speak(emocao);
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void selecionarResposta(String resposta) {
+  void selecionarResposta(String respostaSelecionada) {
     final respostaCorreta = fasesEmbaralhadas[faseAtual]['resposta'];
 
-    if (resposta == respostaCorreta) {
+    if (respostaSelecionada == respostaCorreta) {
       setState(() {
         estrelas++;
       });
@@ -124,13 +95,15 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
       }
     });
 
-    falarPalavraAtual();
+    falarEmocaoAtual();
   }
 
   void mostrarResultado(bool acertou) {
     showDialog(
       context: context,
+
       barrierDismissible: false,
+
       builder: (_) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
@@ -139,11 +112,13 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
 
           title: Text(
             acertou ? 'Muito bem! ⭐' : 'Ops 😅',
+
             textAlign: TextAlign.center,
           ),
 
           content: Text(
             acertou ? 'Você acertou' : 'Tente novamente.',
+
             textAlign: TextAlign.center,
           ),
 
@@ -152,6 +127,7 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
+
                   foregroundColor: Colors.white,
                 ),
 
@@ -170,6 +146,15 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    flutterTts.stop();
+
+    super.dispose();
   }
 
   @override
@@ -244,106 +229,103 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
       ),
 
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+        padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            const SizedBox(height: 10),
+            Card(
+              elevation: 4,
 
-            // IMAGEM REAL
-            Container(
-              width: double.infinity,
-
-              padding: const EdgeInsets.all(20),
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-
-                borderRadius: BorderRadius.circular(20),
-
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 6),
-                ],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
               ),
 
-              child: Column(
-                children: [
-                  const Text(
-                    'Escolha o correto:',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.indigo,
-                    ),
-                  ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
 
-                  const SizedBox(height: 20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Como essa pessoa está?',
 
-                  SizedBox(
-                    height: 150,
+                      style: TextStyle(
+                        fontSize: 24,
 
-                    child: Image.asset(
-                      fasesEmbaralhadas[faseAtual]['imagemReal'],
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                        fontWeight: FontWeight.bold,
 
-                  const SizedBox(height: 18),
-
-                  SizedBox(
-                    width: double.infinity,
-
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
-
-                        foregroundColor: Colors.white,
-
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-
-                      onPressed: falarPalavraAtual,
-
-                      icon: const Icon(Icons.volume_up_rounded, size: 22),
-
-                      label: const Text(
-                        'Ouvir Palavra',
-
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        color: Colors.indigo[700],
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+                      height: 170,
+
+                      child: Image.asset(
+                        fasesEmbaralhadas[faseAtual]['imagem'],
+
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+                      width: double.infinity,
+
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+
+                          foregroundColor: Colors.white,
+
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+
+                        onPressed: falarEmocaoAtual,
+
+                        icon: const Icon(Icons.volume_up_rounded, size: 22),
+
+                        label: const Text(
+                          'Ouvir Emoção',
+
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
             const SizedBox(height: 12),
 
-            // PICTOGRAMAS
             Expanded(
               child: GridView.builder(
-                itemCount: pictogramas.length,
+                itemCount: opcoes.length,
 
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
+                  crossAxisCount: 2,
 
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 12,
 
-                  childAspectRatio: 0.9,
+                  mainAxisSpacing: 12,
+
+                  childAspectRatio: 1,
                 ),
 
                 itemBuilder: (context, index) {
-                  final pictograma = pictogramas[index];
+                  final opcao = opcoes[index];
 
-                  final bool ehCorreto = pictograma['texto'] == respostaCorreta;
+                  final bool ehCorreto = opcao['texto'] == respostaCorreta;
 
                   return AnimatedBuilder(
                     animation: _controller,
@@ -362,7 +344,9 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
                                       color: Colors.green.withOpacity(
                                         0.2 + (_controller.value * 0.4),
                                       ),
+
                                       blurRadius: 10 + (_controller.value * 18),
+
                                       spreadRadius: 1 + (_controller.value * 4),
                                     ),
                                   ]
@@ -383,7 +367,7 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
                           ),
 
                           onPressed: () {
-                            selecionarResposta(pictograma['texto']!);
+                            selecionarResposta(opcao['texto']!);
                           },
 
                           child: Column(
@@ -391,21 +375,25 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
 
                             children: [
                               SizedBox(
-                                height: 70,
+                                height: 130,
 
                                 child: Image.asset(
-                                  pictograma['imagem']!,
+                                  opcao['imagem']!,
+
                                   fit: BoxFit.contain,
                                 ),
                               ),
 
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 8),
 
                               Text(
-                                pictograma['texto']!,
+                                opcao['texto']!,
+
                                 textAlign: TextAlign.center,
+
                                 style: const TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 16,
+
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

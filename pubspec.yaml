@@ -31,6 +31,8 @@ flutter:
     - assets/imagens/
     - assets/imagens_reais/
     - assets/logo/
+    - assets/jogos/
+    - assets/jogos/emocoes/
 
   fonts:
     - family: WDXLLubrifontTC-Regular
