@@ -78,11 +78,12 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const GerenciarCategoriasPage()),
+                MaterialPageRoute(
+                  builder: (_) => const GerenciarCategoriasPage(),
+                ),
               );
             },
           ),
-
 
           //Botão Trocar Perfil
           _buildBotaoAcao(
@@ -200,10 +201,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                 Expanded(
                   child: Text(
                     email ?? 'Email não disponível',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -249,7 +247,10 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green[100],
                       borderRadius: BorderRadius.circular(12),
@@ -307,7 +308,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           SwitchListTile(
             secondary: Icon(
               ttsService.vozFeminina ? Icons.woman : Icons.man,
-              color: ttsService.vozFeminina ? Colors.pink[400] : Colors.blue[400],
+              color:
+                  ttsService.vozFeminina ? Colors.pink[400] : Colors.blue[400],
               size: 30,
             ),
             title: const Text(
@@ -317,7 +319,10 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             subtitle: Text(
               ttsService.vozFeminina ? 'Voz Feminina' : 'Voz Masculina',
               style: TextStyle(
-                color: ttsService.vozFeminina ? Colors.pink[700] : Colors.blue[700],
+                color:
+                    ttsService.vozFeminina
+                        ? Colors.pink[700]
+                        : Colors.blue[700],
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -419,16 +424,14 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
       ),
       title: Text(
         titulo,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
-      subtitle: Text(
-        subtitulo,
-        style: const TextStyle(fontSize: 13),
+      subtitle: Text(subtitulo, style: const TextStyle(fontSize: 13)),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: Colors.grey[400],
       ),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
       onTap: onTap,
     );
   }
@@ -450,18 +453,12 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           const SizedBox(height: 4),
           Text(
             'Versão 1.0.0',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
           ),
           const SizedBox(height: 4),
           Text(
             'Comunicação Aumentativa e Alternativa',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
           ),
           const SizedBox(height: 24),
         ],
@@ -475,7 +472,9 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
       barrierDismissible: false, // Impede fechar clicando fora
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Icon(Icons.logout, color: Colors.red[700]),
@@ -519,10 +518,9 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
 
                   if (context.mounted) {
                     Navigator.of(context).pop(); // Fecha loading
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/',
-                          (route) => false,
-                    );
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/', (route) => false);
                   }
                 } catch (e) {
                   if (context.mounted) {
@@ -531,11 +529,12 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                       SnackBar(
                         content: Row(
                           children: [
-                            const Icon(Icons.error_outline, color: Colors.white),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text('Erro ao fazer logout: $e'),
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.white,
                             ),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text('Erro ao fazer logout: $e')),
                           ],
                         ),
                         backgroundColor: Colors.red,
@@ -550,7 +549,10 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Sair'),
             ),

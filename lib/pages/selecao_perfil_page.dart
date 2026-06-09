@@ -66,8 +66,6 @@ class SelecaoPerfilPage extends StatelessWidget {
     );
   }
 
-
-
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -100,10 +98,7 @@ class SelecaoPerfilPage extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Crie perfis personalizados para cada pessoa.\nCada perfil terá seus próprios botões!',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
@@ -120,7 +115,10 @@ class SelecaoPerfilPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18),
               ),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 20,
+                ),
                 backgroundColor: Colors.indigo[700],
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -158,10 +156,7 @@ class SelecaoPerfilPage extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 '${perfilService.quantidadePerfis} ${perfilService.quantidadePerfis == 1 ? "perfil criado" : "perfis criados"}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.indigo[700],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.indigo[700]),
               ),
             ],
           ),
@@ -191,20 +186,21 @@ class SelecaoPerfilPage extends StatelessWidget {
   }
 
   Widget _buildPerfilCard(
-      BuildContext context,
-      Perfil perfil,
-      bool isAtivo,
-      PerfilService perfilService,
-      ) {
+    BuildContext context,
+    Perfil perfil,
+    bool isAtivo,
+    PerfilService perfilService,
+  ) {
     return Hero(
       tag: 'perfil_${perfil.id}',
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: isAtivo
-              ? BorderSide(color: perfil.cor, width: 3)
-              : BorderSide.none,
+          side:
+              isAtivo
+                  ? BorderSide(color: perfil.cor, width: 3)
+                  : BorderSide.none,
         ),
         child: InkWell(
           onTap: () async {
@@ -282,7 +278,10 @@ class SelecaoPerfilPage extends StatelessWidget {
                 // Botão ou badge
                 if (isAtivo)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: perfil.cor,
                       borderRadius: BorderRadius.circular(20),
@@ -313,19 +312,11 @@ class SelecaoPerfilPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: perfil.cor.withOpacity(0.15),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: perfil.cor.withOpacity(0.3),
-          width: 2,
-        ),
+        border: Border.all(color: perfil.cor.withOpacity(0.3), width: 2),
       ),
-      child: Icon(
-        perfil.icone,
-        size: 45,
-        color: perfil.cor,
-      ),
+      child: Icon(perfil.icone, size: 45, color: perfil.cor),
     );
   }
-
 
   void _confirmarLogout(BuildContext context) {
     showDialog(

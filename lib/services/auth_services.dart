@@ -20,16 +20,10 @@ class AuthService extends ChangeNotifier {
   }
 
   // MeTODO DE LOGIN (apenas emails que já foram registrados)
-  Future<String?> login({
-    required String email,
-    required String senha,
-  }) async {
+  Future<String?> login({required String email, required String senha}) async {
     try {
       // Firebase valida e realiza o login
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: senha,
-      );
+      await _auth.signInWithEmailAndPassword(email: email, password: senha);
 
       // Recarrega dados do usuário (necessário para contas antigas)
       await _auth.currentUser?.reload();
@@ -37,7 +31,6 @@ class AuthService extends ChangeNotifier {
 
       notifyListeners();
       return null; // Sucesso
-
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':
@@ -79,7 +72,6 @@ class AuthService extends ChangeNotifier {
 
       notifyListeners();
       return null;
-
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'email-already-in-use':
@@ -126,7 +118,6 @@ class AuthService extends ChangeNotifier {
 
       await _auth.sendPasswordResetEmail(email: email);
       return null; // Sucesso
-
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'invalid-email':

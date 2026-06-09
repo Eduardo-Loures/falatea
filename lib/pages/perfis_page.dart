@@ -13,10 +13,7 @@ class PerfisPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gerenciar Perfis'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Gerenciar Perfis'), centerTitle: true),
       body: Consumer<PerfilService>(
         builder: (context, perfilService, child) {
           if (perfilService.perfis.isEmpty) {
@@ -29,7 +26,7 @@ class PerfisPage extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.75,
             ),
             itemCount: perfilService.perfis.length,
             itemBuilder: (context, index) {
@@ -54,11 +51,7 @@ class PerfisPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.person_add_outlined,
-            size: 100,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.person_add_outlined, size: 100, color: Colors.grey[400]),
           const SizedBox(height: 24),
           Text(
             'Nenhum perfil criado',
@@ -71,38 +64,26 @@ class PerfisPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Crie um perfil diferente para cada pessoa',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[500]),
           ),
           const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => _mostrarDialogoCriarPerfil(context),
-            icon: const Icon(Icons.add),
-            label: const Text('Criar Primeiro Perfil'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            ),
-          ),
         ],
       ),
     );
   }
 
   Widget _buildPerfilCard(
-      BuildContext context,
-      Perfil perfil,
-      bool isAtivo,
-      PerfilService perfilService,
-      ) {
+    BuildContext context,
+    Perfil perfil,
+    bool isAtivo,
+    PerfilService perfilService,
+  ) {
     return Card(
       elevation: isAtivo ? 8 : 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: isAtivo
-            ? BorderSide(color: perfil.cor, width: 3)
-            : BorderSide.none,
+        side:
+            isAtivo ? BorderSide(color: perfil.cor, width: 3) : BorderSide.none,
       ),
       child: InkWell(
         onTap: () async {
@@ -113,6 +94,7 @@ class PerfisPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 12),
             // Foto ou Ícone
             if (perfil.foto != null)
               ClipOval(
@@ -150,7 +132,10 @@ class PerfisPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: perfil.cor,
                     borderRadius: BorderRadius.circular(12),
@@ -166,7 +151,7 @@ class PerfisPage extends StatelessWidget {
                 ),
               ),
 
-            const Spacer(),
+            const SizedBox(height: 8),
 
             // Botões de ação
             Row(
@@ -179,7 +164,8 @@ class PerfisPage extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                  onPressed: () => _confirmarExclusao(context, perfil, perfilService),
+                  onPressed:
+                      () => _confirmarExclusao(context, perfil, perfilService),
                   tooltip: 'Excluir',
                 ),
               ],
@@ -198,11 +184,7 @@ class PerfisPage extends StatelessWidget {
         color: perfil.cor.withOpacity(0.2),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        perfil.icone,
-        size: 40,
-        color: perfil.cor,
-      ),
+      child: Icon(perfil.icone, size: 40, color: perfil.cor),
     );
   }
 
@@ -221,14 +203,29 @@ class PerfisPage extends StatelessWidget {
     IconData iconeSelecionado = perfilExistente?.icone ?? Icons.person;
 
     final cores = [
-      Colors.blue, Colors.red, Colors.green, Colors.orange,
-      Colors.purple, Colors.pink, Colors.teal, Colors.amber,
-      Colors.indigo, Colors.cyan, Colors.lime, Colors.brown,
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.pink,
+      Colors.teal,
+      Colors.amber,
+      Colors.indigo,
+      Colors.cyan,
     ];
 
     final icones = [
-      Icons.person, Icons.child_care, Icons.face,Icons.face_2, Icons.mood,
-      Icons.face_3, Icons.face_4, Icons.face_5, Icons.face_6, Icons.face_sharp,
+      Icons.person,
+      Icons.child_care,
+      Icons.face,
+      Icons.face_2,
+      Icons.mood,
+      Icons.face_3,
+      Icons.face_4,
+      Icons.face_5,
+      Icons.face_6,
+      Icons.face_sharp,
     ];
 
     showDialog(
@@ -237,7 +234,9 @@ class PerfisPage extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(perfilExistente == null ? 'Criar Perfil' : 'Editar Perfil'),
+              title: Text(
+                perfilExistente == null ? 'Criar Perfil' : 'Editar Perfil',
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -258,7 +257,9 @@ class PerfisPage extends StatelessWidget {
                     OutlinedButton.icon(
                       onPressed: () async {
                         final picker = ImagePicker();
-                        final picked = await picker.pickImage(source: ImageSource.gallery);
+                        final picked = await picker.pickImage(
+                          source: ImageSource.gallery,
+                        );
                         if (picked != null) {
                           setState(() {
                             fotoPath = picked.path;
@@ -266,7 +267,9 @@ class PerfisPage extends StatelessWidget {
                         }
                       },
                       icon: const Icon(Icons.add_photo_alternate),
-                      label: Text(fotoPath == null ? 'Adicionar Foto' : 'Alterar Foto'),
+                      label: Text(
+                        fotoPath == null ? 'Adicionar Foto' : 'Alterar Foto',
+                      ),
                     ),
 
                     if (fotoPath != null)
@@ -283,70 +286,98 @@ class PerfisPage extends StatelessWidget {
                       ),
 
                     const SizedBox(height: 16),
-                    const Text('Selecione um ícone:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Selecione um ícone:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
 
                     // Grid de Ícones
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: icones.map((icone) {
-                        final isSelected = icone == iconeSelecionado;
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              iconeSelecionado = icone;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? corSelecionada.withOpacity(0.2) : Colors.grey[100],
-                              border: Border.all(
-                                color: isSelected ? corSelecionada : Colors.grey[300]!,
-                                width: isSelected ? 2 : 1,
+                      children:
+                          icones.map((icone) {
+                            final isSelected = icone == iconeSelecionado;
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  iconeSelecionado = icone;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isSelected
+                                          ? corSelecionada.withOpacity(0.2)
+                                          : Colors.grey[100],
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? corSelecionada
+                                            : Colors.grey[300]!,
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  icone,
+                                  color:
+                                      isSelected
+                                          ? corSelecionada
+                                          : Colors.grey[600],
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(icone, color: isSelected ? corSelecionada : Colors.grey[600]),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
 
                     const SizedBox(height: 16),
-                    const Text('Selecione uma cor:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Selecione uma cor:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 8),
 
                     // Grid de Cores
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: cores.map((cor) {
-                        final isSelected = cor == corSelecionada;
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              corSelecionada = cor;
-                            });
-                          },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: cor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected ? Colors.black : Colors.white,
-                                width: isSelected ? 3 : 2,
+                      children:
+                          cores.map((cor) {
+                            final isSelected = cor == corSelecionada;
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  corSelecionada = cor;
+                                });
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: cor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? Colors.black
+                                            : Colors.white,
+                                    width: isSelected ? 3 : 2,
+                                  ),
+                                ),
+                                child:
+                                    isSelected
+                                        ? const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 20,
+                                        )
+                                        : null,
                               ),
-                            ),
-                            child: isSelected
-                                ? const Icon(Icons.check, color: Colors.white, size: 20)
-                                : null,
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
                   ],
                 ),
@@ -379,7 +410,9 @@ class PerfisPage extends StatelessWidget {
                       await perfilService.criarPerfil(novoPerfil);
 
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Perfil "${novoPerfil.nome}" criado!')),
+                        SnackBar(
+                          content: Text('Perfil "${novoPerfil.nome}" criado!'),
+                        ),
                       );
                     } else {
                       // Editar existente
@@ -408,13 +441,19 @@ class PerfisPage extends StatelessWidget {
     );
   }
 
-  void _confirmarExclusao(BuildContext context, Perfil perfil, PerfilService perfilService) {
+  void _confirmarExclusao(
+    BuildContext context,
+    Perfil perfil,
+    PerfilService perfilService,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Excluir Perfil'),
-          content: Text('Deseja excluir o perfil de "${perfil.nome}"?\n\nTodos os botões personalizados deste perfil serão perdidos.'),
+          content: Text(
+            'Deseja excluir o perfil de "${perfil.nome}"?\n\nTodos os botões personalizados deste perfil serão perdidos.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),

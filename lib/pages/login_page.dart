@@ -132,9 +132,12 @@ class _LoginPageState extends State<LoginPage> {
           // Aguarda o snackbar
           await Future.delayed(const Duration(milliseconds: 800));
 
-          // DIRECIONA AUTOMATICAMENTE PARA A SELEÇÃO DE PERFIL
+          // DIRECIONA AUTOMATICAMENTE PARA A modo page
           if (mounted) {
-            Navigator.pushReplacementNamed(context, '/selecionar_perfil');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ModoPage()),
+            );
           }
         }
       }
@@ -220,7 +223,6 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   // Logo/Ícone do App
                   SizedBox(
-
                     height: 320,
 
                     child: Image.asset(

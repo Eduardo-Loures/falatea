@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 /// Esta classe armazena as informações de cada botão de comunicação,
 /// incluindo texto, ícone/imagem, cor e se é fixo (não pode ser excluído)
 class BotaoAAC {
-  final String label;           // Texto do botão (ex: "água", "mamãe")
-  final IconData? icon;         // Ícone do Material Icons (opcional)
-  final String? imagePath;      // Caminho da imagem (assets ou arquivo local)
-  final Color color;            // Cor de fundo do botão
-  final bool isFixo;            // Se true, não pode ser excluído
+  final String label; // Texto do botão (ex: "água", "mamãe")
+  final IconData? icon; // Ícone do Material Icons (opcional)
+  final String? imagePath; // Caminho da imagem (assets ou arquivo local)
+  final Color color; // Cor de fundo do botão
+  final bool isFixo; // Se true, não pode ser excluído
 
   BotaoAAC(
-      this.label,
-      this.icon,
-      this.color, {
-        this.imagePath,
-        this.isFixo = false,
-      });
+    this.label,
+    this.icon,
+    this.color, {
+    this.imagePath,
+    this.isFixo = false,
+  });
 
   /// Converte o botão para JSON para salvar no SharedPreferences
   Map<String, dynamic> toJson() {
@@ -35,10 +35,7 @@ class BotaoAAC {
     return BotaoAAC(
       json['label'] as String,
       json['iconCodePoint'] != null
-          ? IconData(
-        json['iconCodePoint'] as int,
-        fontFamily: 'MaterialIcons',
-      )
+          ? IconData(json['iconCodePoint'] as int, fontFamily: 'MaterialIcons')
           : null,
       Color(json['colorValue'] as int),
       imagePath: json['imagePath'] as String?,
@@ -82,9 +79,9 @@ class BotaoAAC {
   @override
   int get hashCode {
     return label.hashCode ^
-    icon.hashCode ^
-    imagePath.hashCode ^
-    color.hashCode ^
-    isFixo.hashCode;
+        icon.hashCode ^
+        imagePath.hashCode ^
+        color.hashCode ^
+        isFixo.hashCode;
   }
 }

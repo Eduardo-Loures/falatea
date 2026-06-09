@@ -86,10 +86,7 @@ class _AuthCheckState extends State<AuthCheck> {
               const SizedBox(height: 8),
               Text(
                 'Carregando...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.white70),
               ),
             ],
           ),

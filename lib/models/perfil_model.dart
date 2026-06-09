@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 /// Modelo de dados para Perfil de Aluno
 class Perfil {
-  final String id;              // ID único do perfil
-  final String nome;            // Nome do aluno (ex: "Pedro", "Lucas")
-  final String? foto;           // Caminho da foto do aluno (opcional)
-  final Color cor;              // Cor temática do perfil
-  final IconData icone;         // Ícone representativo
-  final DateTime dataCriacao;   // Quando foi criado
+  final String id; // ID único do perfil
+  final String nome; // Nome do aluno (ex: "Pedro", "Lucas")
+  final String? foto; // Caminho da foto do aluno (opcional)
+  final Color cor; // Cor temática do perfil
+  final IconData icone; // Ícone representativo
+  final DateTime dataCriacao; // Quando foi criado
 
   Perfil({
     required this.id,

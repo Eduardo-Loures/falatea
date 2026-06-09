@@ -64,9 +64,7 @@ class ModoPage extends StatelessWidget {
 
                   subtitulo: 'Utilize os botões AAC para comunicação.',
 
-                  icon: Icons.record_voice_over_rounded,
-
-                  cor: Colors.blue,
+                  imagem: 'assets/logo/comunicacao.png',
 
                   onTap: () async {
                     final perfilService = context.read<PerfilService>();
@@ -99,16 +97,12 @@ class ModoPage extends StatelessWidget {
 
                   subtitulo: 'Evolua relacionando imagens.',
 
-                  icon: Icons.psychology_rounded,
-
-                  cor: Colors.green,
+                  imagem: 'assets/logo/jogos.png',
 
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const JogosPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const JogosPage()),
                     );
                   },
                 ),
@@ -124,8 +118,7 @@ class ModoPage extends StatelessWidget {
     required BuildContext context,
     required String titulo,
     required String subtitulo,
-    required IconData icon,
-    required Color cor,
+    required String imagem,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -148,15 +141,11 @@ class ModoPage extends StatelessWidget {
 
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(18),
+            SizedBox(
+              height: 100,
+              width: 100,
 
-              decoration: BoxDecoration(
-                color: cor.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-
-              child: Icon(icon, color: cor, size: 38),
+              child: Image.asset(imagem, fit: BoxFit.contain),
             ),
 
             const SizedBox(width: 20),
@@ -185,8 +174,6 @@ class ModoPage extends StatelessWidget {
                 ],
               ),
             ),
-
-            Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[500]),
           ],
         ),
       ),

@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:collection';
 
-
 // Tela principal que gerencia as categorias e botões de comunicação
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -57,7 +56,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   };
 
   // DADOS DAS CATEGORIAS E BOTÕES PREDEFINIDOS
-  final LinkedHashMap<String, List<BotaoAAC>> categorias = LinkedHashMap<String, List<BotaoAAC>>();
+  final LinkedHashMap<String, List<BotaoAAC>> categorias =
+      LinkedHashMap<String, List<BotaoAAC>>();
 
   @override
   void initState() {
@@ -66,34 +66,154 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Inicializa as categorias em ordem fixa
     categorias.addAll({
       'Ações': [
-        BotaoAAC('quero', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/quero.png'),
-        BotaoAAC('comer', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/comer.png'),
-        BotaoAAC('beber', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/beber.png'),
-        BotaoAAC('dormir', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/dormir.png'),
-        BotaoAAC('ir', null, Colors.orange, isFixo: true, imagePath: 'assets/imagens/ir.png'),
+        BotaoAAC(
+          'quero',
+          null,
+          Colors.orange,
+          isFixo: true,
+          imagePath: 'assets/imagens/quero.png',
+        ),
+        BotaoAAC(
+          'comer',
+          null,
+          Colors.orange,
+          isFixo: true,
+          imagePath: 'assets/imagens/comer.png',
+        ),
+        BotaoAAC(
+          'beber',
+          null,
+          Colors.orange,
+          isFixo: true,
+          imagePath: 'assets/imagens/beber.png',
+        ),
+        BotaoAAC(
+          'dormir',
+          null,
+          Colors.orange,
+          isFixo: true,
+          imagePath: 'assets/imagens/dormir.png',
+        ),
+        BotaoAAC(
+          'ir',
+          null,
+          Colors.orange,
+          isFixo: true,
+          imagePath: 'assets/imagens/ir.png',
+        ),
       ],
       'Pessoas': [
-        BotaoAAC('Eu', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/eu.png'),
-        BotaoAAC('você', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/voce.png'),
-        BotaoAAC('mamãe', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/mamae.png'),
-        BotaoAAC('papai', null, Colors.blue, isFixo: true, imagePath: 'assets/imagens/papai.png'),
+        BotaoAAC(
+          'Eu',
+          null,
+          Colors.blue,
+          isFixo: true,
+          imagePath: 'assets/imagens/eu.png',
+        ),
+        BotaoAAC(
+          'você',
+          null,
+          Colors.blue,
+          isFixo: true,
+          imagePath: 'assets/imagens/voce.png',
+        ),
+        BotaoAAC(
+          'mamãe',
+          null,
+          Colors.blue,
+          isFixo: true,
+          imagePath: 'assets/imagens/mamae.png',
+        ),
+        BotaoAAC(
+          'papai',
+          null,
+          Colors.blue,
+          isFixo: true,
+          imagePath: 'assets/imagens/papai.png',
+        ),
       ],
       'Objetos': [
-        BotaoAAC('água', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/agua.png'),
-        BotaoAAC('leite', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/leite.png'),
-        BotaoAAC('brinquedo', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/brinquedo.png'),
-        BotaoAAC('bola', null, Colors.teal, isFixo: true, imagePath: 'assets/imagens/bola.png'),
+        BotaoAAC(
+          'água',
+          null,
+          Colors.teal,
+          isFixo: true,
+          imagePath: 'assets/imagens/agua.png',
+        ),
+        BotaoAAC(
+          'leite',
+          null,
+          Colors.teal,
+          isFixo: true,
+          imagePath: 'assets/imagens/leite.png',
+        ),
+        BotaoAAC(
+          'brinquedo',
+          null,
+          Colors.teal,
+          isFixo: true,
+          imagePath: 'assets/imagens/brinquedo.png',
+        ),
+        BotaoAAC(
+          'bola',
+          null,
+          Colors.teal,
+          isFixo: true,
+          imagePath: 'assets/imagens/bola.png',
+        ),
       ],
       'Emoções': [
-        BotaoAAC('feliz', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/feliz.png'),
-        BotaoAAC('triste', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/triste.png'),
-        BotaoAAC('nervoso', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/nervoso.png'),
-        BotaoAAC('ansioso', null, Colors.lightGreen, isFixo: true, imagePath: 'assets/imagens/ansioso.png'),
+        BotaoAAC(
+          'feliz',
+          null,
+          Colors.lightGreen,
+          isFixo: true,
+          imagePath: 'assets/imagens/feliz.png',
+        ),
+        BotaoAAC(
+          'triste',
+          null,
+          Colors.lightGreen,
+          isFixo: true,
+          imagePath: 'assets/imagens/triste.png',
+        ),
+        BotaoAAC(
+          'nervoso',
+          null,
+          Colors.lightGreen,
+          isFixo: true,
+          imagePath: 'assets/imagens/nervoso.png',
+        ),
+        BotaoAAC(
+          'ansioso',
+          null,
+          Colors.lightGreen,
+          isFixo: true,
+          imagePath: 'assets/imagens/ansioso.png',
+        ),
       ],
       'Negação': [
-        BotaoAAC('não', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/nao.png'),
-        BotaoAAC('pare', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/pare.png'),
-        BotaoAAC('acabou', null, Colors.red, isFixo: true, imagePath: 'assets/imagens/acabou.png'),
+        BotaoAAC(
+          'não',
+          null,
+          Colors.red,
+          isFixo: true,
+          imagePath: 'assets/imagens/nao.png',
+        ),
+        BotaoAAC(
+          'pare',
+          null,
+          Colors.red,
+          isFixo: true,
+          imagePath: 'assets/imagens/pare.png',
+        ),
+        BotaoAAC(
+          'acabou',
+          null,
+          Colors.red,
+          isFixo: true,
+          imagePath: 'assets/imagens/acabou.png',
+        ),
       ],
     });
 
@@ -138,7 +258,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-
   // PERSISTÊNCIA DE DADOS
   Future<void> _salvarBotoesPersonalizados() async {
     try {
@@ -176,7 +295,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       });
 
       // Continua carregando os botões personalizados
-      final botoesPersonalizados = await perfilService.getBotoesPerfilAtivoAsync();
+      final botoesPersonalizados =
+          await perfilService.getBotoesPerfilAtivoAsync();
 
       categorias.forEach((categoria, botoes) {
         botoes.removeWhere((botao) => !botao.isFixo);
@@ -184,7 +304,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       botoesPersonalizados.forEach((categoria, botoes) {
         if (categorias.containsKey(categoria)) {
-          final botoesNaoFixos = botoes.where((botao) => !botao.isFixo).toList();
+          final botoesNaoFixos =
+              botoes.where((botao) => !botao.isFixo).toList();
           categorias[categoria]!.addAll(botoesNaoFixos);
         }
       });
@@ -192,7 +313,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (mounted) setState(() {});
 
       print('Categorias e botões carregados com sucesso!');
-
     } catch (e) {
       print('Erro ao carregar configs: $e');
     }
@@ -222,7 +342,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-
         final orientation = MediaQuery.of(context).orientation;
         final crossAxisCount = orientation == Orientation.portrait ? 3 : 5;
 
@@ -236,8 +355,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           // Calcula quantas linhas essa categoria ocupa
           final linhas = (numBotoes / crossAxisCount).ceil();
 
-          final childAspectRatio = orientation == Orientation.portrait ? 1.0 : 1.4;
-          final itemHeight = (MediaQuery.of(context).size.width - 16) / crossAxisCount / childAspectRatio;
+          final childAspectRatio =
+              orientation == Orientation.portrait ? 1.0 : 1.4;
+          final itemHeight =
+              (MediaQuery.of(context).size.width - 16) /
+              crossAxisCount /
+              childAspectRatio;
           final spacing = orientation == Orientation.portrait ? 10 : 8;
 
           offset += 40; // Título da categoria
@@ -247,10 +370,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         // Faz o scroll
         _scrollController.animateTo(
-          offset.clamp(
-            0,
-            _scrollController.position.maxScrollExtent,
-          ),
+          offset.clamp(0, _scrollController.position.maxScrollExtent),
           duration: const Duration(milliseconds: 400),
           curve: Curves.easeInOut,
         );
@@ -272,7 +392,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       if (tabController.length == newLength) return;
 
-      final safeIndex = (preferIndex ?? tabController.index).clamp(0, newLength - 1);
+      final safeIndex = (preferIndex ?? tabController.index).clamp(
+        0,
+        newLength - 1,
+      );
 
       tabController.dispose();
 
@@ -291,7 +414,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       setState(() {}); // força rebuild
     });
   }
-
 
   // MANIPULAÇÃO DE FALA
   void falarPalavra(String palavra) {
@@ -344,7 +466,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 });
                 // Garantir tabs atualizadas
                 _updateTabControllerIfNeeded(
-                  preferIndex: categorias.keys.toList().indexOf(categoriaEncontrada!),
+                  preferIndex: categorias.keys.toList().indexOf(
+                    categoriaEncontrada!,
+                  ),
                 );
 
                 await _salvarBotoesPersonalizados();
@@ -356,7 +480,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30), // o
                 ),
@@ -391,7 +518,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               title: const Row(
                 children: [
                   Icon(Icons.create_new_folder, color: Colors.green),
@@ -430,34 +559,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'Cor da categoria:',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
-                        children: coresDisponiveis.map((cor) {
-                          final isSelected = cor == corSelecionada;
-                          return InkWell(
-                            onTap: () => setDialogState(() => corSelecionada = cor),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: cor,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: isSelected ? Colors.black : Colors.white,
-                                  width: isSelected ? 3 : 2,
+                        children:
+                            coresDisponiveis.map((cor) {
+                              final isSelected = cor == corSelecionada;
+                              return InkWell(
+                                onTap:
+                                    () => setDialogState(
+                                      () => corSelecionada = cor,
+                                    ),
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: cor,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color:
+                                          isSelected
+                                              ? Colors.black
+                                              : Colors.white,
+                                      width: isSelected ? 3 : 2,
+                                    ),
+                                  ),
+                                  child:
+                                      isSelected
+                                          ? const Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                          )
+                                          : null,
                                 ),
-                              ),
-                              child: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white)
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            }).toList(),
                       ),
                     ],
                   ),
@@ -477,14 +620,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                     if (nome.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Digite o nome da categoria")),
+                        const SnackBar(
+                          content: Text("Digite o nome da categoria"),
+                        ),
                       );
                       return;
                     }
 
                     if (categorias.containsKey(nome)) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Essa categoria já existe")),
+                        const SnackBar(
+                          content: Text("Essa categoria já existe"),
+                        ),
                       );
                       return;
                     }
@@ -495,15 +642,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       categorias[nome] = [];
                       corDasCategorias[nome] = corSelecionada;
                     });
-                    context.read<PerfilService>().salvarCategoriasPerfilAtivo(corDasCategorias);
-                    _updateTabControllerIfNeeded(preferIndex: categorias.length - 1);
+                    context.read<PerfilService>().salvarCategoriasPerfilAtivo(
+                      corDasCategorias,
+                    );
+                    _updateTabControllerIfNeeded(
+                      preferIndex: categorias.length - 1,
+                    );
 
                     Navigator.pop(dialogContext);
 
                     // Atualiza drop-down do diálogo de adicionar botão
                     if (onCategoriacriada != null) onCategoriacriada!();
                   },
-                )
+                ),
               ],
             );
           },
@@ -516,7 +667,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Impede excluir categorias fixas
     if (categoriasFixas.contains(categoria)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Categorias fixas não podem ser excluídas.")),
+        const SnackBar(
+          content: Text("Categorias fixas não podem ser excluídas."),
+        ),
       );
       return;
     }
@@ -525,7 +678,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Icon(Icons.delete_forever, color: Colors.red[700]),
@@ -535,7 +690,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           content: Text(
             'Tem certeza que deseja excluir a categoria "$categoria"?\n'
-                'Todos os botões dentro dela também serão removidos.',
+            'Todos os botões dentro dela também serão removidos.',
           ),
           actions: [
             TextButton(
@@ -558,9 +713,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 _updateTabControllerIfNeeded();
 
                 // Salva categorias atualizadas
-                context
-                    .read<PerfilService>()
-                    .salvarCategoriasPerfilAtivo(corDasCategorias);
+                context.read<PerfilService>().salvarCategoriasPerfilAtivo(
+                  corDasCategorias,
+                );
 
                 // Salva botões atualizados
                 await _salvarBotoesPersonalizados();
@@ -575,7 +730,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -628,10 +786,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               title: const Center(
                 child: Text(
                   'Criar novo botão',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
               content: ConstrainedBox(
@@ -664,9 +819,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       // CATEGORIA
                       Row(
                         children: [
-                          Icon(Icons.category, size: 20, color: Colors.indigo[700]),
+                          Icon(
+                            Icons.category,
+                            size: 20,
+                            color: Colors.indigo[700],
+                          ),
                           const SizedBox(width: 8),
-                          const Text('Categoria:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                          const Text(
+                            'Categoria:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
                           const Spacer(),
 
                           TextButton.icon(
@@ -677,10 +842,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               });
                             },
                             icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Nova', style: TextStyle(fontSize: 13)),
+                            label: const Text(
+                              'Nova',
+                              style: TextStyle(fontSize: 13),
+                            ),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.green[700],
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                             ),
                           ),
                         ],
@@ -689,10 +860,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: categoriaSelecionada,
-                        items: categorias.keys.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                        items:
+                            categorias.keys
+                                .map(
+                                  (cat) => DropdownMenuItem(
+                                    value: cat,
+                                    child: Text(cat),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (String? valor) {
                           setDialogState(() {
-                            categoriaSelecionada = valor ?? categorias.keys.first;
+                            categoriaSelecionada =
+                                valor ?? categorias.keys.first;
                           });
                         },
                       ),
@@ -704,11 +884,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       // Imagem (Opcional)
                       Row(
                         children: [
-                          Icon(Icons.image, size: 20, color: Colors.indigo[700]),
+                          Icon(
+                            Icons.image,
+                            size: 20,
+                            color: Colors.indigo[700],
+                          ),
                           const SizedBox(width: 8),
                           const Text(
                             'Imagem (Opcional):',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
                           ),
                         ],
                       ),
@@ -716,7 +903,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       OutlinedButton.icon(
                         onPressed: () async {
                           final picker = ImagePicker();
-                          final picked = await picker.pickImage(source: ImageSource.gallery);
+                          final picked = await picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
                           if (picked != null) {
                             setDialogState(() {
                               imagemSelecionada = picked.path;
@@ -724,11 +913,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           }
                         },
                         icon: const Icon(Icons.add_photo_alternate),
-                        label: Text(imagemSelecionada == null ? 'Procure na galeria' : 'Trocar Imagem'),
+                        label: Text(
+                          imagemSelecionada == null
+                              ? 'Procure na galeria'
+                              : 'Trocar Imagem',
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.indigo[700],
                           side: BorderSide(color: Colors.indigo[300]!),
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
                         ),
                       ),
                       if (imagemSelecionada != null)
@@ -786,7 +982,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           const SizedBox(width: 8),
                           const Text(
                             'Ícone:',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
                           ),
                         ],
                       ),
@@ -799,25 +998,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                           filled: true,
                           fillColor: Colors.grey[50],
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                         ),
                         isExpanded: true,
-                        items: iconesDisponiveis.keys
-                            .map((nome) => DropdownMenuItem(
-                          value: nome,
-                          child: Row(
-                            children: [
-                              Icon(iconesDisponiveis[nome]!, size: 20),
-                              const SizedBox(width: 12),
-                              Text(nome, style: const TextStyle(fontSize: 15)),
-                            ],
-                          ),
-                        ))
-                            .toList(),
+                        items:
+                            iconesDisponiveis.keys
+                                .map(
+                                  (nome) => DropdownMenuItem(
+                                    value: nome,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          iconesDisponiveis[nome]!,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          nome,
+                                          style: const TextStyle(fontSize: 15),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (String? valor) {
                           setDialogState(() {
                             iconeSelecionadoNome = valor ?? 'Estrela';
-                            iconSelecionado = iconesDisponiveis[iconeSelecionadoNome]!;
+                            iconSelecionado =
+                                iconesDisponiveis[iconeSelecionadoNome]!;
                           });
                         },
                       ),
@@ -834,12 +1046,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   onPressed: () async {
                     if (labelController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Digite o texto do botão')),
+                        const SnackBar(
+                          content: Text('Digite o texto do botão'),
+                        ),
                       );
                       return;
                     }
 
-                    final corDaCategoria = corDasCategorias[categoriaSelecionada] ?? Colors.grey;
+                    final corDaCategoria =
+                        corDasCategorias[categoriaSelecionada] ?? Colors.grey;
 
                     final novoBotao = BotaoAAC(
                       labelController.text.trim(),
@@ -852,7 +1067,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                     // Garantir Tabs antes de alterar UI
                     _updateTabControllerIfNeeded(
-                      preferIndex: categorias.keys.toList().indexOf(categoriaSelecionada),
+                      preferIndex: categorias.keys.toList().indexOf(
+                        categoriaSelecionada,
+                      ),
                     );
 
                     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -867,7 +1084,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Botão "${labelController.text.trim()}" criado!'),
+                          content: Text(
+                            'Botão "${labelController.text.trim()}" criado!',
+                          ),
                           backgroundColor: Colors.green[700],
                         ),
                       );
@@ -879,9 +1098,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo[700],
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                   ),
-                )
+                ),
               ],
             );
           },
@@ -929,37 +1151,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               tooltip: 'Voltar para seleção',
             ),
             // Mostrar título apenas em portrait
-            title: isLandscape
-                ? null  // Esconde completamente em landscape
-                : Column(
-              children: [
-                const Text(
-                  'FalaTEA',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-                if (perfilAtivo != null)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+            title:
+                isLandscape
+                    ? null // Esconde completamente em landscape
+                    : Column(
                       children: [
-                        Text(
-                          perfilAtivo.nome,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                        const Text(
+                          'FalaTEA',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
                           ),
                         ),
+                        if (perfilAtivo != null)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  perfilAtivo.nome,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
-                  ),
-              ],
-            ),
             elevation: 0,
             actions: [
               Padding(
@@ -978,26 +1204,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   if (value == 'configuracoes') {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ConfiguracoesPage()),
+                      MaterialPageRoute(
+                        builder: (_) => const ConfiguracoesPage(),
+                      ),
                     );
                   } else if (value == 'limpar_dados') {
                     bool? confirmar = await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Limpar dados'),
-                        content: Text('Isso removerá todos os botões personalizados de ${perfilAtivo?.nome}. Deseja continuar?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancelar'),
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('Limpar dados'),
+                            content: Text(
+                              'Isso removerá todos os botões personalizados de ${perfilAtivo?.nome}. Deseja continuar?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancelar'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                child: const Text('Limpar'),
+                              ),
+                            ],
                           ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                            child: const Text('Limpar'),
-                          ),
-                        ],
-                      ),
                     );
 
                     if (confirmar == true) {
@@ -1008,39 +1241,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         });
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Dados limpos com sucesso!')),
+                        const SnackBar(
+                          content: Text('Dados limpos com sucesso!'),
+                        ),
                       );
                     }
                   } else if (value == 'trocar_perfil') {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const SelecaoPerfilPage()),
+                      MaterialPageRoute(
+                        builder: (_) => const SelecaoPerfilPage(),
+                      ),
                     );
                   } else if (value == 'logout') {
                     bool? confirmar = await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Sair'),
-                        content: const Text('Deseja realmente sair da sua conta?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancelar'),
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('Sair'),
+                            content: const Text(
+                              'Deseja realmente sair da sua conta?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancelar'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                child: const Text('Sair'),
+                              ),
+                            ],
                           ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                            child: const Text('Sair'),
-                          ),
-                        ],
-                      ),
                     );
 
                     if (confirmar == true) {
                       try {
                         await context.read<AuthService>().logout();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Logout realizado com sucesso!')),
+                          const SnackBar(
+                            content: Text('Logout realizado com sucesso!'),
+                          ),
                         );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -1050,28 +1294,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     }
                   }
                 },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'configuracoes',
-                    child: Row(
-                      children: [
-                        Icon(Icons.settings, color: Colors.indigo),
-                        SizedBox(width: 8),
-                        Text('Configurações'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'trocar_perfil',
-                    child: Row(
-                      children: [
-                        Icon(Icons.swap_horiz, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text('Trocar Perfil'),
-                      ],
-                    ),
-                  ),
-                ],
+                itemBuilder:
+                    (context) => [
+                      const PopupMenuItem(
+                        value: 'configuracoes',
+                        child: Row(
+                          children: [
+                            Icon(Icons.settings, color: Colors.indigo),
+                            SizedBox(width: 8),
+                            Text('Configurações'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'trocar_perfil',
+                        child: Row(
+                          children: [
+                            Icon(Icons.swap_horiz, color: Colors.blue),
+                            SizedBox(width: 8),
+                            Text('Trocar Perfil'),
+                          ],
+                        ),
+                      ),
+                    ],
               ),
             ],
             bottom: PreferredSize(
@@ -1082,10 +1327,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: TabBar(
                   controller: tabController,
                   isScrollable: true,
-                  tabs: categorias.keys.map((cat) => Tab(
-                    text: cat,
-                    height: isLandscape ? 40 : 48,
-                  )).toList(),
+                  tabs:
+                      categorias.keys
+                          .map(
+                            (cat) =>
+                                Tab(text: cat, height: isLandscape ? 40 : 48),
+                          )
+                          .toList(),
                   indicatorColor: Colors.indigo[600],
                   indicatorWeight: 3,
                   labelStyle: TextStyle(
@@ -1107,7 +1355,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           body: LayoutBuilder(
             builder: (context, constraints) {
               final orientation = MediaQuery.of(context).orientation;
-              final crossAxisCount = orientation == Orientation.portrait ? 3 : 5;
+              final crossAxisCount =
+                  orientation == Orientation.portrait ? 3 : 5;
 
               return ListView.builder(
                 controller: _scrollController,
@@ -1128,30 +1377,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       botoes.isEmpty
                           ? _buildCategoriaVazia()
                           : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minHeight: 0,
-                            maxHeight: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minHeight: 0,
+                                maxHeight: double.infinity,
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, box) {
+                                  return GridView.builder(
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: crossAxisCount,
+                                          childAspectRatio:
+                                              orientation ==
+                                                      Orientation.portrait
+                                                  ? 1.0
+                                                  : 1.4,
+                                          crossAxisSpacing: 10,
+                                          mainAxisSpacing: 10,
+                                        ),
+                                    itemCount: botoes.length,
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemBuilder:
+                                        (_, i) => _buildBotaoComunicacao(
+                                          botoes[i],
+                                          orientation,
+                                        ),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
-                          child: LayoutBuilder(
-                            builder: (context, box) {
-                              return GridView.builder(
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  childAspectRatio: orientation == Orientation.portrait ? 1.0 : 1.4,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                ),
-                                itemCount: botoes.length,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (_, i) => _buildBotaoComunicacao(botoes[i], orientation),
-                              );
-                            },
-                          ),
-                        )
-                      ),
                     ],
                   );
                 },
@@ -1183,9 +1444,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               style: TextStyle(
                 fontSize: orientation == Orientation.portrait ? 18 : 16,
                 fontWeight: FontWeight.w500,
-                color: _textoFalado.isEmpty
-                    ? Colors.grey[600]
-                    : Colors.black87,
+                color: _textoFalado.isEmpty ? Colors.grey[600] : Colors.black87,
               ),
             ),
           ),
@@ -1223,29 +1482,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-
   Widget _buildCategoriaVazia() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         'Ainda não há botões nesta categoria.\nToque no + para adicionar botões aqui.',
-        style: TextStyle(
-          fontSize: 18,
-          color: Colors.black,
-        ),
+        style: TextStyle(fontSize: 18, color: Colors.black),
       ),
     );
   }
 
   Widget _buildBotaoComunicacao(BotaoAAC btn, Orientation orientation) {
-    final double cardMaxHeight = orientation == Orientation.portrait ? 150 : 120;
+    final double cardMaxHeight =
+        orientation == Orientation.portrait ? 150 : 120;
 
     return SizedBox(
       height: cardMaxHeight,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: btn.color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.all(6),
         ),
         onPressed: () => falarPalavra(btn.label),
@@ -1256,15 +1514,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             // IMAGEM OU ÍCONE COM ALTURA LIMITADA
             SizedBox(
               height: orientation == Orientation.portrait ? 60 : 45,
-              child: btn.imagePath != null
-                  ? (btn.imagePath!.startsWith('assets/')
-                  ? Image.asset(btn.imagePath!, fit: BoxFit.contain)
-                  : Image.file(File(btn.imagePath!), fit: BoxFit.contain))
-                  : Icon(
-                       btn.icon ?? Icons.help_outline,
-                       size: orientation == Orientation.portrait ? 34 : 28,
-                       color: Colors.black87,
-                  )
+              child:
+                  btn.imagePath != null
+                      ? (btn.imagePath!.startsWith('assets/')
+                          ? Image.asset(btn.imagePath!, fit: BoxFit.contain)
+                          : Image.file(
+                            File(btn.imagePath!),
+                            fit: BoxFit.contain,
+                          ))
+                      : Icon(
+                        btn.icon ?? Icons.help_outline,
+                        size: orientation == Orientation.portrait ? 34 : 28,
+                        color: Colors.black87,
+                      ),
             ),
 
             const SizedBox(height: 6),

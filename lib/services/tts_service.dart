@@ -14,8 +14,11 @@ class TtsService extends ChangeNotifier {
   bool _isInitialized = false;
 
   bool get vozFeminina => _vozFeminina;
+
   double get velocidadeFala => _velocidadeFala;
+
   double get tomVoz => _tomVoz;
+
   double get volume => _volume;
 
   FlutterTts get tts => _tts;
@@ -61,7 +64,6 @@ class TtsService extends ChangeNotifier {
 
       _isInitialized = true;
       debugPrint('✅ TTS inicializado');
-
     } catch (e) {
       debugPrint('❌ Erro ao inicializar TTS: $e');
       _isInitialized = false;
@@ -137,35 +139,43 @@ class TtsService extends ChangeNotifier {
             debugPrint('📋 Procurando vozes offline...');
 
             // Procura vozes PT (qualquer uma disponível)
-            final ptVoices = voices.where((v) {
-              final locale = v['locale']?.toString().toLowerCase() ?? '';
-              return locale.startsWith('pt');
-            }).toList();
+            final ptVoices =
+                voices.where((v) {
+                  final locale = v['locale']?.toString().toLowerCase() ?? '';
+                  return locale.startsWith('pt');
+                }).toList();
 
             if (ptVoices.isNotEmpty) {
               debugPrint('✅ ${ptVoices.length} vozes PT encontradas');
 
               // Tenta filtrar por gênero
-              final filteredVoices = ptVoices.where((v) {
-                final name = v['name']?.toString().toLowerCase() ?? '';
-                if (_vozFeminina) {
-                  return name.contains('female') || name.contains('pte') || name.contains('f0');
-                } else {
-                  return name.contains('male') || name.contains('ptd') || name.contains('m0');
-                }
-              }).toList();
+              final filteredVoices =
+                  ptVoices.where((v) {
+                    final name = v['name']?.toString().toLowerCase() ?? '';
+                    if (_vozFeminina) {
+                      return name.contains('female') ||
+                          name.contains('pte') ||
+                          name.contains('f0');
+                    } else {
+                      return name.contains('male') ||
+                          name.contains('ptd') ||
+                          name.contains('m0');
+                    }
+                  }).toList();
 
               if (filteredVoices.isNotEmpty) {
                 await _tts.setVoice({
                   'name': filteredVoices.first['name'],
-                  'locale': filteredVoices.first['locale']
+                  'locale': filteredVoices.first['locale'],
                 });
-                debugPrint('✅ Voz ${_vozFeminina ? "feminina" : "masculina"} offline: ${filteredVoices.first['name']}');
+                debugPrint(
+                  '✅ Voz ${_vozFeminina ? "feminina" : "masculina"} offline: ${filteredVoices.first['name']}',
+                );
               } else {
                 // Usa primeira voz PT disponível
                 await _tts.setVoice({
                   'name': ptVoices.first['name'],
-                  'locale': ptVoices.first['locale']
+                  'locale': ptVoices.first['locale'],
                 });
                 debugPrint('✅ Voz PT padrão: ${ptVoices.first['name']}');
               }
@@ -178,7 +188,9 @@ class TtsService extends ChangeNotifier {
         }
       }
 
-      debugPrint('✅ Config aplicadas → Voz: ${_vozFeminina ? "Feminina" : "Masculina"}');
+      debugPrint(
+        '✅ Config aplicadas → Voz: ${_vozFeminina ? "Feminina" : "Masculina"}',
+      );
     } catch (e) {
       debugPrint('❌ Erro ao aplicar config: $e');
     }
@@ -251,9 +263,10 @@ class TtsService extends ChangeNotifier {
   }
 
   Future<void> testarVoz() async {
-    String textoTeste = _vozFeminina
-        ? "Olá! Esta é a voz feminina do FalaTEA."
-        : "Olá! Esta é a voz masculina do FalaTEA.";
+    String textoTeste =
+        _vozFeminina
+            ? "Olá! Esta é a voz feminina do FalaTEA."
+            : "Olá! Esta é a voz masculina do FalaTEA.";
     await _aplicarConfiguracoes();
     await falar(textoTeste);
   }

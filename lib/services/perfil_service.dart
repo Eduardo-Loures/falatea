@@ -12,8 +12,11 @@ class PerfilService extends ChangeNotifier {
   Perfil? _perfilAtivo;
 
   List<Perfil> get perfis => _perfis;
+
   Perfil? get perfilAtivo => _perfilAtivo;
+
   bool get temPerfis => _perfis.isNotEmpty;
+
   int get quantidadePerfis => _perfis.length;
 
   // Armazena categorias e botões carregados do perfil ativo
@@ -25,6 +28,7 @@ class PerfilService extends ChangeNotifier {
   Map<String, List<BotaoAAC>> _botoesSalvos = {};
 
   Map<String, Color> get categoriasSalvas => _categoriasSalvas;
+
   Map<String, List<BotaoAAC>> get botoesSalvos => _botoesSalvos;
 
   // Pega o UID do usuário atual
@@ -113,7 +117,6 @@ class PerfilService extends ChangeNotifier {
     print('Dados limpos da memória (mantidos no storage)');
   }
 
-
   // DELETAR TODOS OS DADOS DO USUÁRIO (USE COM CUIDADO!)
   Future<void> deletarTodosDadosUsuario() async {
     if (_userUid == null) return;
@@ -123,9 +126,8 @@ class PerfilService extends ChangeNotifier {
 
       // Remove todas as chaves relacionadas ao usuário atual
       final keys = prefs.getKeys();
-      final keysParaRemover = keys.where((key) =>
-          key.contains('user_$_userUid')
-      ).toList();
+      final keysParaRemover =
+          keys.where((key) => key.contains('user_$_userUid')).toList();
 
       for (var key in keysParaRemover) {
         await prefs.remove(key);
@@ -141,7 +143,6 @@ class PerfilService extends ChangeNotifier {
       print('Erro ao deletar dados: $e');
     }
   }
-
 
   // SALVAR PERFIS (COM UID DO USUÁRIO)
 
@@ -177,7 +178,9 @@ class PerfilService extends ChangeNotifier {
 
       // VERIFICA SE REALMENTE SALVOU
       final verificacao = prefs.getString(key);
-      print('DEBUG: Verificação - dados salvos: ${verificacao != null ? "SIM" : "NÃO"}');
+      print(
+        'DEBUG: Verificação - dados salvos: ${verificacao != null ? "SIM" : "NÃO"}',
+      );
 
       print('Perfis salvos para usuário $_userUid');
     } catch (e) {
@@ -237,7 +240,7 @@ class PerfilService extends ChangeNotifier {
   // SELECIONAR PERFIL
   Future<void> selecionarPerfil(String perfilId) async {
     final perfil = _perfis.firstWhere(
-          (p) => p.id == perfilId,
+      (p) => p.id == perfilId,
       orElse: () => throw Exception('Perfil não encontrado'),
     );
 
@@ -247,7 +250,9 @@ class PerfilService extends ChangeNotifier {
   }
 
   // SALVAR BOTÕES PERSONALIZADOS (COM UID)
-  Future<void> salvarBotoesPerfilAtivo(Map<String, List<BotaoAAC>> botoes) async {
+  Future<void> salvarBotoesPerfilAtivo(
+    Map<String, List<BotaoAAC>> botoes,
+  ) async {
     if (_perfilAtivo == null || _userUid == null) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -266,7 +271,6 @@ class PerfilService extends ChangeNotifier {
 
     notifyListeners();
   }
-
 
   // CARREGAR BOTÕES PERSONALIZADOS (COM UID)
   Map<String, List<BotaoAAC>> getBotoesPerfilAtivo() {
@@ -287,7 +291,9 @@ class PerfilService extends ChangeNotifier {
         final jsonString = prefs.getString(key);
 
         if (jsonString != null) {
-          print('Botões carregados para perfil ${_perfilAtivo!.nome} (usuário $_userUid)');
+          print(
+            'Botões carregados para perfil ${_perfilAtivo!.nome} (usuário $_userUid)',
+          );
         } else {
           print('Nenhum botão salvo para este perfil e usuário');
         }
@@ -319,9 +325,8 @@ class PerfilService extends ChangeNotifier {
       final Map<String, List<BotaoAAC>> botoes = {};
 
       data.forEach((categoria, listaJson) {
-        botoes[categoria] = (listaJson as List)
-            .map((json) => BotaoAAC.fromJson(json))
-            .toList();
+        botoes[categoria] =
+            (listaJson as List).map((json) => BotaoAAC.fromJson(json)).toList();
       });
 
       return botoes;
@@ -331,19 +336,22 @@ class PerfilService extends ChangeNotifier {
     }
   }
 
-  Future<void> salvarCategoriasPerfilAtivo(Map<String, Color> categorias) async {
+  Future<void> salvarCategoriasPerfilAtivo(
+    Map<String, Color> categorias,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
 
     final converted = categorias.map((k, v) => MapEntry(k, v.value));
 
-    await prefs.setString('categorias_${perfilAtivo!.id}', jsonEncode(converted));
+    await prefs.setString(
+      'categorias_${perfilAtivo!.id}',
+      jsonEncode(converted),
+    );
     // Atualiza memória interna
     _categoriasSalvas = Map.from(categorias);
 
     notifyListeners();
   }
-
-
 
   Future<Map<String, Color>> carregarCategoriasPerfilAtivo() async {
     if (_perfilAtivo == null) return {};
@@ -354,7 +362,9 @@ class PerfilService extends ChangeNotifier {
     if (jsonString == null) return {};
 
     final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-    final map = decoded.map((nome, corValue) => MapEntry(nome, Color(corValue)));
+    final map = decoded.map(
+      (nome, corValue) => MapEntry(nome, Color(corValue)),
+    );
 
     return map;
   }
@@ -370,6 +380,4 @@ class PerfilService extends ChangeNotifier {
     // Notifica quem usa PerfilService
     notifyListeners();
   }
-
-
 }

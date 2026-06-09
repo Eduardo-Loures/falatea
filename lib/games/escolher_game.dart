@@ -185,7 +185,7 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
         foregroundColor: Colors.white,
 
         title: const Text(
-          'Emoções',
+          'Qual é?',
 
           style: TextStyle(fontWeight: FontWeight.bold),
         ),

@@ -27,19 +27,24 @@ class GerenciarCategoriasPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView(
-        children: categorias.keys.map((categoria) {
-          final bool isFixa = HomePageStateStatic.categoriasFixas.contains(categoria);
+        children:
+            categorias.keys.map((categoria) {
+              final bool isFixa = HomePageStateStatic.categoriasFixas.contains(
+                categoria,
+              );
 
-          return ListTile(
-            title: Text(categoria),
-            trailing: isFixa
-                ? const Icon(Icons.lock, color: Colors.grey)
-                : Icon(Icons.delete, color: Colors.red[700]),
-            onTap: isFixa
-                ? null
-                : () => _confirmarExclusao(context, categoria),
-          );
-        }).toList(),
+              return ListTile(
+                title: Text(categoria),
+                trailing:
+                    isFixa
+                        ? const Icon(Icons.lock, color: Colors.grey)
+                        : Icon(Icons.delete, color: Colors.red[700]),
+                onTap:
+                    isFixa
+                        ? null
+                        : () => _confirmarExclusao(context, categoria),
+              );
+            }).toList(),
       ),
     );
   }
@@ -47,25 +52,28 @@ class GerenciarCategoriasPage extends StatelessWidget {
   void _confirmarExclusao(BuildContext context, String categoria) async {
     final bool? confirmar = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Excluir categoria'),
-        content: Text('Tem certeza que deseja excluir "$categoria"?\n'
-            'Todos os botões desta categoria serão removidos.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Excluir categoria'),
+            content: Text(
+              'Tem certeza que deseja excluir "$categoria"?\n'
+              'Todos os botões desta categoria serão removidos.',
             ),
-            child: const Text('Excluir'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Excluir'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmar != true) return;
