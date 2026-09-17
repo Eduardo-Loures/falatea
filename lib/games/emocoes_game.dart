@@ -207,7 +207,7 @@ class _EmocoesGameState extends State<EmocoesGame>
               Switch(
                 value: ajudaAtivada,
 
-                activeColor: Colors.amber,
+                activeThumbColor: Colors.amber,
 
                 onChanged: (value) {
                   setState(() {
@@ -341,8 +341,8 @@ class _EmocoesGameState extends State<EmocoesGame>
                               brilho
                                   ? [
                                     BoxShadow(
-                                      color: Colors.green.withOpacity(
-                                        0.2 + (_controller.value * 0.4),
+                                      color: Colors.green.withValues(
+                                        alpha: 0.2 + (_controller.value * 0.4),
                                       ),
 
                                       blurRadius: 10 + (_controller.value * 18),

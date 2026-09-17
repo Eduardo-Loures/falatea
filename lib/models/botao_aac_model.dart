@@ -25,7 +25,7 @@ class BotaoAAC {
       'label': label,
       'iconCodePoint': icon?.codePoint,
       'imagePath': imagePath,
-      'colorValue': color.value,
+      'colorValue': color.toARGB32(),
       'isFixo': isFixo,
     };
   }

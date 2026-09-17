@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
-import 'package:flutter/services.dart';
 
 class TtsService extends ChangeNotifier {
   final FlutterTts _tts = FlutterTts();

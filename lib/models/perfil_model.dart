@@ -24,7 +24,7 @@ class Perfil {
       'id': id,
       'nome': nome,
       'foto': foto,
-      'corValue': cor.value,
+      'corValue': cor.toARGB32(),
       'iconeCodePoint': icone.codePoint,
       'dataCriacao': dataCriacao.toIso8601String(),
     };

@@ -6,17 +6,16 @@ import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
-import 'package:projeto/games/escolher_game.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:collection';
 
 // Tela principal que gerencia as categorias e botões de comunicação
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class HomePageStateStatic {
@@ -228,9 +227,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _carregarConfigsSalvas();
 
     // Recria keys SEMPRE seguindo a ordem correta
-    categorias.keys.forEach((key) {
+    for (final key in categorias.keys) {
       _categoryKeys[key] = GlobalKey();
-    });
+    }
 
     //Listener do TabController sem overflow
     tabController.addListener(() {
@@ -274,9 +273,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       });
 
       await perfilService.salvarBotoesPerfilAtivo(botoesParaSalvar);
-      print('Botões personalizados salvos com sucesso!');
+      debugPrint('Botões personalizados salvos com sucesso!');
     } catch (e) {
-      print('Erro ao salvar botões personalizados: $e');
+      debugPrint('Erro ao salvar botões personalizados: $e');
     }
   }
 
@@ -312,16 +311,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       if (mounted) setState(() {});
 
-      print('Categorias e botões carregados com sucesso!');
+      debugPrint('Categorias e botões carregados com sucesso!');
     } catch (e) {
-      print('Erro ao carregar configs: $e');
+      debugPrint('Erro ao carregar configs: $e');
     }
   }
 
   Future<void> _limparDadosSalvos() async {
     final perfilService = context.read<PerfilService>();
     await perfilService.salvarBotoesPerfilAtivo({});
-    print('Dados do perfil atual limpos!');
+    debugPrint('Dados do perfil atual limpos!');
   }
 
   void _onPerfilServiceChanged() {
@@ -375,7 +374,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           curve: Curves.easeInOut,
         );
       } catch (e) {
-        print('Erro ao calcular scroll: $e');
+        debugPrint('Erro ao calcular scroll: $e');
       }
     });
   }
@@ -652,7 +651,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     Navigator.pop(dialogContext);
 
                     // Atualiza drop-down do diálogo de adicionar botão
-                    if (onCategoriacriada != null) onCategoriacriada!();
+                    if (onCategoriacriada != null) onCategoriacriada();
                   },
                 ),
               ],
@@ -663,94 +662,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _mostrarDialogoExcluirCategoria(String categoria) {
-    // Impede excluir categorias fixas
-    if (categoriasFixas.contains(categoria)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Categorias fixas não podem ser excluídas."),
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.delete_forever, color: Colors.red[700]),
-              const SizedBox(width: 12),
-              Text("Excluir categoria"),
-            ],
-          ),
-          content: Text(
-            'Tem certeza que deseja excluir a categoria "$categoria"?\n'
-            'Todos os botões dentro dela também serão removidos.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancelar"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context);
-
-                // Reseta scroll antes de mudar árvore (evita overflow)
-                _scrollController.jumpTo(0);
-
-                setState(() {
-                  categorias.remove(categoria);
-                  corDasCategorias.remove(categoria);
-                  _categoryKeys.remove(categoria);
-                });
-
-                _updateTabControllerIfNeeded();
-
-                // Salva categorias atualizadas
-                context.read<PerfilService>().salvarCategoriasPerfilAtivo(
-                  corDasCategorias,
-                );
-
-                // Salva botões atualizados
-                await _salvarBotoesPersonalizados();
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Categoria "$categoria" excluída!'),
-                    backgroundColor: Colors.red[700],
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: const Text("Excluir"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void mostrarDialogoAdicionarBotao() {
-    print("Qtd categorias = ${categorias.length}");
-
     final labelController = TextEditingController();
-    final orientation = MediaQuery.of(context).orientation;
 
     IconData iconSelecionado = Icons.star;
     String categoriaSelecionada = categorias.keys.first;
@@ -859,7 +772,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: categoriaSelecionada,
+                        initialValue: categoriaSelecionada,
                         items:
                             categorias.keys
                                 .map(
@@ -991,7 +904,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: iconeSelecionadoNome,
+                        initialValue: iconeSelecionadoNome,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1116,7 +1029,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     _currentOrientation = MediaQuery.of(context).orientation;
-    int crossAxisCount = _currentOrientation == Orientation.portrait ? 3 : 5;
 
     // Verifica se está em modo paisagem
     final isLandscape = _currentOrientation == Orientation.landscape;

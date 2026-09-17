@@ -4,7 +4,7 @@ import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/home_page.dart';
 
 class GerenciarCategoriasPage extends StatelessWidget {
-  const GerenciarCategoriasPage({Key? key}) : super(key: key);
+  const GerenciarCategoriasPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class GerenciarCategoriasPage extends StatelessWidget {
     }
 
     // Categorias carregadas DO HOME
-    final categorias = perfilService.categoriasSalvas ?? {};
+    final categorias = perfilService.categoriasSalvas;
 
     return Scaffold(
       appBar: AppBar(

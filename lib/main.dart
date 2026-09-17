@@ -15,9 +15,6 @@ import 'package:projeto/pages/login_page.dart';
 import 'package:projeto/pages/home_page.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
 
-// AuthCheck
-import 'package:projeto/widgets/auth_check.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -41,7 +38,7 @@ void main() async {
 }
 
 class FalaTEA extends StatelessWidget {
-  const FalaTEA({Key? key}) : super(key: key);
+  const FalaTEA({super.key});
 
   @override
   Widget build(BuildContext context) {

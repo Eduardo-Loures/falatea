@@ -20,10 +20,6 @@ class PerfilService extends ChangeNotifier {
   int get quantidadePerfis => _perfis.length;
 
   // Armazena categorias e botões carregados do perfil ativo
-  Map<String, Color> _categorias = {};
-  Map<String, List<BotaoAAC>> _botoesPersonalizados = {};
-
-  // Armazena categorias e botões carregados do perfil ativo
   Map<String, Color> _categoriasSalvas = {};
   Map<String, List<BotaoAAC>> _botoesSalvos = {};
 
@@ -40,11 +36,11 @@ class PerfilService extends ChangeNotifier {
     _auth.authStateChanges().listen((User? user) {
       if (user != null) {
         // Usuário logou, carrega dados
-        print('AuthStateChanged: Usuário logou, carregando dados');
+        debugPrint('AuthStateChanged: Usuário logou, carregando dados');
         carregarDadosUsuario();
       } else {
         // Usuário deslogou, limpa memória
-        print('AuthStateChanged: Usuário deslogou, limpando memória');
+        debugPrint('AuthStateChanged: Usuário deslogou, limpando memória');
         limparDadosMemoria();
       }
     });
@@ -58,11 +54,8 @@ class PerfilService extends ChangeNotifier {
 
   // CARREGAR DADOS DO USUÁRIO AO FAZER LOGIN
   Future<void> carregarDadosUsuario() async {
-    print(' DEBUG: Iniciando carregarDadosUsuario');
-    print(' DEBUG: _userUid = $_userUid');
-
     if (_userUid == null) {
-      print('Nenhum usuário autenticado');
+      debugPrint('Nenhum usuário autenticado');
       return;
     }
 
@@ -104,7 +97,7 @@ class PerfilService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Erro ao carregar dados do usuário: $e');
+      debugPrint('Erro ao carregar dados do usuário: $e');
     }
   }
 
@@ -114,7 +107,7 @@ class PerfilService extends ChangeNotifier {
     _perfis = [];
     _perfilAtivo = null;
     notifyListeners();
-    print('Dados limpos da memória (mantidos no storage)');
+    debugPrint('Dados limpos da memória (mantidos no storage)');
   }
 
   // DELETAR TODOS OS DADOS DO USUÁRIO (USE COM CUIDADO!)
@@ -138,22 +131,18 @@ class PerfilService extends ChangeNotifier {
       _perfilAtivo = null;
       notifyListeners();
 
-      print('Todos os dados do usuário $_userUid deletados permanentemente');
+      debugPrint(
+        'Todos os dados do usuário $_userUid deletados permanentemente',
+      );
     } catch (e) {
-      print('Erro ao deletar dados: $e');
+      debugPrint('Erro ao deletar dados: $e');
     }
   }
 
   // SALVAR PERFIS (COM UID DO USUÁRIO)
-
   Future<void> _salvarPerfis() async {
-    print('DEBUG: Iniciando _salvarPerfis');
-    print('DEBUG: _userUid = $_userUid');
-    print('DEBUG: _perfis.length = ${_perfis.length}');
-    print('DEBUG: _perfilAtivo = ${_perfilAtivo?.nome}');
-
     if (_userUid == null) {
-      print('Nenhum usuário autenticado - dados não salvos');
+      debugPrint('Nenhum usuário autenticado - dados não salvos');
       return;
     }
 
@@ -162,29 +151,17 @@ class PerfilService extends ChangeNotifier {
 
       // Chave específica do usuário
       final key = 'perfis_user_$_userUid';
-      print('DEBUG: Chave para salvar = $key');
-
       final perfisJson = _perfis.map((p) => p.toJson()).toList();
-      print('DEBUG: Perfis JSON = $perfisJson');
-
       await prefs.setString(key, jsonEncode(perfisJson));
-      print('DEBUG: Dados gravados no SharedPreferences');
 
       // Salva perfil ativo
       if (_perfilAtivo != null) {
         await prefs.setString('perfil_ativo_user_$_userUid', _perfilAtivo!.id);
-        print('DEBUG: Perfil ativo salvo: ${_perfilAtivo!.id}');
       }
 
-      // VERIFICA SE REALMENTE SALVOU
-      final verificacao = prefs.getString(key);
-      print(
-        'DEBUG: Verificação - dados salvos: ${verificacao != null ? "SIM" : "NÃO"}',
-      );
-
-      print('Perfis salvos para usuário $_userUid');
+      debugPrint('Perfis salvos para usuário $_userUid');
     } catch (e) {
-      print('Erro ao salvar perfis: $e');
+      debugPrint('Erro ao salvar perfis: $e');
     }
   }
 
@@ -273,42 +250,6 @@ class PerfilService extends ChangeNotifier {
   }
 
   // CARREGAR BOTÕES PERSONALIZADOS (COM UID)
-  Map<String, List<BotaoAAC>> getBotoesPerfilAtivo() {
-    if (_perfilAtivo == null) {
-      print('Nenhum perfil ativo');
-      return {};
-    }
-
-    if (_userUid == null) {
-      print('Nenhum usuário autenticado');
-      return {};
-    }
-
-    try {
-      SharedPreferences.getInstance().then((prefs) {
-        // CHAVE AGORA INCLUI O UID DO USUÁRIO
-        final key = 'botoes_perfil_${_perfilAtivo!.id}_user_$_userUid';
-        final jsonString = prefs.getString(key);
-
-        if (jsonString != null) {
-          print(
-            'Botões carregados para perfil ${_perfilAtivo!.nome} (usuário $_userUid)',
-          );
-        } else {
-          print('Nenhum botão salvo para este perfil e usuário');
-        }
-      });
-
-      // Retorna vazio por enquanto (sincrono)
-      // Os botões serão carregados de forma assíncrona na HomePage
-      return {};
-    } catch (e) {
-      print('Erro ao carregar botões: $e');
-      return {};
-    }
-  }
-
-  // VERSÃO ASSÍNCRONA PARA CARREGAR BOTÕES
   Future<Map<String, List<BotaoAAC>>> getBotoesPerfilAtivoAsync() async {
     if (_perfilAtivo == null) return {};
     if (_userUid == null) return {};
@@ -331,7 +272,7 @@ class PerfilService extends ChangeNotifier {
 
       return botoes;
     } catch (e) {
-      print('Erro ao carregar botões: $e');
+      debugPrint('Erro ao carregar botões: $e');
       return {};
     }
   }
@@ -341,7 +282,7 @@ class PerfilService extends ChangeNotifier {
   ) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final converted = categorias.map((k, v) => MapEntry(k, v.value));
+    final converted = categorias.map((k, v) => MapEntry(k, v.toARGB32()));
 
     await prefs.setString(
       'categorias_${perfilAtivo!.id}',

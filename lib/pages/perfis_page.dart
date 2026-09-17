@@ -8,7 +8,7 @@ import 'package:uuid/uuid.dart';
 
 /// Tela de gerenciamento de perfis
 class PerfisPage extends StatelessWidget {
-  const PerfisPage({Key? key}) : super(key: key);
+  const PerfisPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +181,7 @@ class PerfisPage extends StatelessWidget {
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: perfil.cor.withOpacity(0.2),
+        color: perfil.cor.withValues(alpha: 0.2),
         shape: BoxShape.circle,
       ),
       child: Icon(perfil.icone, size: 40, color: perfil.cor),
@@ -310,7 +310,9 @@ class PerfisPage extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color:
                                       isSelected
-                                          ? corSelecionada.withOpacity(0.2)
+                                          ? corSelecionada.withValues(
+                                            alpha: 0.2,
+                                          )
                                           : Colors.grey[100],
                                   border: Border.all(
                                     color:

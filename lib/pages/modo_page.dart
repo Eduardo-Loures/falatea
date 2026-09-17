@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:projeto/pages/home_page.dart';
-import 'package:projeto/games/escolher_game.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';

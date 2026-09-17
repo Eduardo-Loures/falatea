@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:projeto/pages/home_page.dart';
 import 'package:projeto/pages/login_page.dart';
-import 'package:projeto/pages/splash_page.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:provider/provider.dart';
 
 class AuthCheck extends StatefulWidget {
-  const AuthCheck({Key? key}) : super(key: key);
+  const AuthCheck({super.key});
 
   @override
-  _AuthCheckState createState() => _AuthCheckState();
+  State<AuthCheck> createState() => _AuthCheckState();
 }
 
 class _AuthCheckState extends State<AuthCheck> {

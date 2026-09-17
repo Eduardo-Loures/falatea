@@ -11,7 +11,7 @@ class AuthService extends ChangeNotifier {
   }
 
   // Monitora mudanças no estado de autenticação
-  _authCheck() {
+  void _authCheck() {
     _auth.authStateChanges().listen((User? user) {
       usuario = user;
       isLoading = false;
@@ -96,7 +96,7 @@ class AuthService extends ChangeNotifier {
       final methods = await _auth.fetchSignInMethodsForEmail(email);
       return methods.isNotEmpty;
     } catch (e) {
-      print('Erro ao verificar email: $e');
+      debugPrint('Erro ao verificar email: $e');
       return false;
     }
   }

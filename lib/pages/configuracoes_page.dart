@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:projeto/models/perfil_model.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
@@ -9,25 +9,13 @@ import 'package:projeto/pages/gerenciar_categorias_page.dart';
 
 //Tela de Configurações do App
 class ConfiguracoesPage extends StatefulWidget {
-  const ConfiguracoesPage({Key? key}) : super(key: key);
+  const ConfiguracoesPage({super.key});
 
   @override
   State<ConfiguracoesPage> createState() => _ConfiguracoesPageState();
 }
 
 class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
-  final FlutterTts _tts = FlutterTts();
-
-  @override
-  void initState() {
-    super.initState();
-    _carregarVozesDisponiveis();
-  }
-
-  Future<void> _carregarVozesDisponiveis() async {
-    await _tts.setLanguage('pt-BR');
-  }
-
   @override
   Widget build(BuildContext context) {
     final authService = context.watch<AuthService>();
@@ -54,7 +42,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           // PERFIL ATIVO
           _buildSecaoHeader('Perfil Ativo', Icons.account_circle),
           if (perfilAtivo != null)
-            _buildCardPerfilAtivo(perfilAtivo, perfilService)
+            _buildCardPerfilAtivo(perfilAtivo)
           else
             _buildCardSemPerfil(),
 
@@ -214,7 +202,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     );
   }
 
-  Widget _buildCardPerfilAtivo(perfil, PerfilService perfilService) {
+  Widget _buildCardPerfilAtivo(Perfil perfil) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       elevation: 2,
@@ -227,7 +215,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: perfil.cor.withOpacity(0.15),
+                color: perfil.cor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
                 border: Border.all(color: perfil.cor, width: 2),
               ),
@@ -417,7 +405,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: cor.withOpacity(0.1),
+          color: cor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: cor, size: 24),
@@ -543,7 +531,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                       ),
                     );
                   }
-                  print('❌ Erro no logout: $e');
+                  debugPrint('❌ Erro no logout: $e');
                 }
               },
               style: ElevatedButton.styleFrom(

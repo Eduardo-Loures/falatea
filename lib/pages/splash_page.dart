@@ -3,12 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/login_page.dart';
-import 'package:projeto/pages/home_page.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
 import 'package:projeto/pages/modo_page.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+  const SplashPage({super.key});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -23,6 +22,7 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _verificarEstado() async {
     await Future.delayed(const Duration(milliseconds: 1500)); // apenas animação
+    if (!mounted) return;
 
     final auth = context.read<AuthService>();
     final perfilService = context.read<PerfilService>();
@@ -40,6 +40,7 @@ class _SplashPageState extends State<SplashPage> {
 
     // Usuário logado → carrega perfis
     await perfilService.carregarDadosUsuario();
+    if (!mounted) return;
 
     if (!perfilService.temPerfis) {
       // Não tem perfil → vai criar/selecionar
@@ -55,7 +56,6 @@ class _SplashPageState extends State<SplashPage> {
       context,
       MaterialPageRoute(builder: (_) => const ModoPage()),
     );
-    ;
   }
 
   @override

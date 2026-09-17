@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:provider/provider.dart';
-import 'package:projeto/pages/home_page.dart';
-import 'package:projeto/pages/selecao_perfil_page.dart';
-import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/pages/modo_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {

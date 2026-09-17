@@ -222,7 +222,7 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
               Switch(
                 value: ajudaAtivada,
 
-                activeColor: Colors.amber,
+                activeThumbColor: Colors.amber,
 
                 onChanged: (value) {
                   setState(() {
@@ -359,8 +359,8 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
                               brilho
                                   ? [
                                     BoxShadow(
-                                      color: Colors.green.withOpacity(
-                                        0.2 + (_controller.value * 0.4),
+                                      color: Colors.green.withValues(
+                                        alpha: 0.2 + (_controller.value * 0.4),
                                       ),
                                       blurRadius: 10 + (_controller.value * 18),
                                       spreadRadius: 1 + (_controller.value * 4),

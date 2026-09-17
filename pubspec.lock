@@ -26,7 +26,7 @@ packages:
     source: hosted
     version: "7.7.1"
   args:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: args
       sha256: d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04
@@ -244,7 +244,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_tts:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_tts
       sha256: bdf2fc4483e74450dc9fc6fe6a9b6a5663e108d4d0dad3324a22c8e26bf48af4
@@ -305,7 +305,7 @@ packages:
     source: hosted
     version: "4.1.2"
   image_picker:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: image_picker
       sha256: "736eb56a911cf24d1859315ad09ddec0b66104bc41a7f8c5b96b4e2620cf5041"

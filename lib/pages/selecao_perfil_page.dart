@@ -3,15 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:projeto/models/perfil_model.dart';
 import 'package:projeto/pages/configuracoes_page.dart';
 import 'package:projeto/pages/home_page.dart';
-import 'package:projeto/pages/modo_page.dart';
 import 'package:projeto/pages/perfis_page.dart';
-import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:provider/provider.dart';
 
 /// Tela intermediária para selecionar qual perfil usar
 class SelecaoPerfilPage extends StatelessWidget {
-  const SelecaoPerfilPage({Key? key}) : super(key: key);
+  const SelecaoPerfilPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -310,43 +308,11 @@ class SelecaoPerfilPage extends StatelessWidget {
       width: 90,
       height: 90,
       decoration: BoxDecoration(
-        color: perfil.cor.withOpacity(0.15),
+        color: perfil.cor.withValues(alpha: 0.15),
         shape: BoxShape.circle,
-        border: Border.all(color: perfil.cor.withOpacity(0.3), width: 2),
+        border: Border.all(color: perfil.cor.withValues(alpha: 0.3), width: 2),
       ),
       child: Icon(perfil.icone, size: 45, color: perfil.cor),
-    );
-  }
-
-  void _confirmarLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Sair'),
-          content: const Text('Deseja realmente sair da sua conta?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await context.read<AuthService>().logout();
-                  Navigator.pop(context);
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao fazer logout: $e')),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Sair'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
