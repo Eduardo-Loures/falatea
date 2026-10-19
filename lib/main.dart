@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // Serviços
+import 'package:projeto/services/acessibilidade_service.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
@@ -30,6 +31,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => AuthService()),
           ChangeNotifierProvider(create: (_) => PerfilService()),
           ChangeNotifierProvider(create: (_) => TtsService()),
+          ChangeNotifierProvider(create: (_) => AcessibilidadeService()),
         ],
         child: const FalaTEA(),
       ),

@@ -3,9 +3,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:projeto/models/botao_aac_model.dart';
 import 'package:projeto/pages/configuracoes_page.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
+import 'package:projeto/services/acessibilidade_service.dart';
 import 'package:projeto/services/auth_services.dart';
+import 'package:projeto/services/cloudinary_service.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
+import 'package:projeto/utils/paleta_acessivel.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:collection';
@@ -62,41 +65,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    // Aplica a paleta de cores das categorias fixas (normal ou segura
+    // para daltonismo, conforme a preferência salva nas Configurações)
+    // ANTES de montar os botões predefinidos, que usam essas cores.
+    _aplicarPaletaCategoriasFixas(
+      context.read<AcessibilidadeService>().modoDaltonismo,
+    );
+
     // Inicializa as categorias em ordem fixa
     categorias.addAll({
       'Ações': [
         BotaoAAC(
           'quero',
           null,
-          Colors.orange,
+          corDasCategorias['Ações']!,
           isFixo: true,
           imagePath: 'assets/imagens/quero.png',
         ),
         BotaoAAC(
           'comer',
           null,
-          Colors.orange,
+          corDasCategorias['Ações']!,
           isFixo: true,
           imagePath: 'assets/imagens/comer.png',
         ),
         BotaoAAC(
           'beber',
           null,
-          Colors.orange,
+          corDasCategorias['Ações']!,
           isFixo: true,
           imagePath: 'assets/imagens/beber.png',
         ),
         BotaoAAC(
           'dormir',
           null,
-          Colors.orange,
+          corDasCategorias['Ações']!,
           isFixo: true,
           imagePath: 'assets/imagens/dormir.png',
         ),
         BotaoAAC(
           'ir',
           null,
-          Colors.orange,
+          corDasCategorias['Ações']!,
           isFixo: true,
           imagePath: 'assets/imagens/ir.png',
         ),
@@ -105,28 +115,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         BotaoAAC(
           'Eu',
           null,
-          Colors.blue,
+          corDasCategorias['Pessoas']!,
           isFixo: true,
           imagePath: 'assets/imagens/eu.png',
         ),
         BotaoAAC(
           'você',
           null,
-          Colors.blue,
+          corDasCategorias['Pessoas']!,
           isFixo: true,
           imagePath: 'assets/imagens/voce.png',
         ),
         BotaoAAC(
           'mamãe',
           null,
-          Colors.blue,
+          corDasCategorias['Pessoas']!,
           isFixo: true,
           imagePath: 'assets/imagens/mamae.png',
         ),
         BotaoAAC(
           'papai',
           null,
-          Colors.blue,
+          corDasCategorias['Pessoas']!,
           isFixo: true,
           imagePath: 'assets/imagens/papai.png',
         ),
@@ -135,28 +145,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         BotaoAAC(
           'água',
           null,
-          Colors.teal,
+          corDasCategorias['Objetos']!,
           isFixo: true,
           imagePath: 'assets/imagens/agua.png',
         ),
         BotaoAAC(
           'leite',
           null,
-          Colors.teal,
+          corDasCategorias['Objetos']!,
           isFixo: true,
           imagePath: 'assets/imagens/leite.png',
         ),
         BotaoAAC(
           'brinquedo',
           null,
-          Colors.teal,
+          corDasCategorias['Objetos']!,
           isFixo: true,
           imagePath: 'assets/imagens/brinquedo.png',
         ),
         BotaoAAC(
           'bola',
           null,
-          Colors.teal,
+          corDasCategorias['Objetos']!,
           isFixo: true,
           imagePath: 'assets/imagens/bola.png',
         ),
@@ -165,28 +175,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         BotaoAAC(
           'feliz',
           null,
-          Colors.lightGreen,
+          corDasCategorias['Emoções']!,
           isFixo: true,
           imagePath: 'assets/imagens/feliz.png',
         ),
         BotaoAAC(
           'triste',
           null,
-          Colors.lightGreen,
+          corDasCategorias['Emoções']!,
           isFixo: true,
           imagePath: 'assets/imagens/triste.png',
         ),
         BotaoAAC(
           'nervoso',
           null,
-          Colors.lightGreen,
+          corDasCategorias['Emoções']!,
           isFixo: true,
           imagePath: 'assets/imagens/nervoso.png',
         ),
         BotaoAAC(
           'ansioso',
           null,
-          Colors.lightGreen,
+          corDasCategorias['Emoções']!,
           isFixo: true,
           imagePath: 'assets/imagens/ansioso.png',
         ),
@@ -195,21 +205,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         BotaoAAC(
           'não',
           null,
-          Colors.red,
+          corDasCategorias['Negação']!,
           isFixo: true,
           imagePath: 'assets/imagens/nao.png',
         ),
         BotaoAAC(
           'pare',
           null,
-          Colors.red,
+          corDasCategorias['Negação']!,
           isFixo: true,
           imagePath: 'assets/imagens/pare.png',
         ),
         BotaoAAC(
           'acabou',
           null,
-          Colors.red,
+          corDasCategorias['Negação']!,
           isFixo: true,
           imagePath: 'assets/imagens/acabou.png',
         ),
@@ -243,6 +253,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _configureOrientationListener();
       context.read<PerfilService>().addListener(_onPerfilServiceChanged);
+      context.read<AcessibilidadeService>().addListener(
+        _onAcessibilidadeServiceChanged,
+      );
     });
   }
 
@@ -252,9 +265,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     try {
       context.read<PerfilService>().removeListener(_onPerfilServiceChanged);
     } catch (_) {}
+    try {
+      context.read<AcessibilidadeService>().removeListener(
+        _onAcessibilidadeServiceChanged,
+      );
+    } catch (_) {}
     tabController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // Aplica a paleta de cor (normal ou segura para daltonismo) nas 5
+  // categorias fixas: atualiza corDasCategorias e, se os botões
+  // predefinidos já existirem, recolore apenas os botões fixos (os
+  // personalizados mantêm a cor que o usuário escolheu).
+  void _aplicarPaletaCategoriasFixas(bool modoDaltonismo) {
+    final paleta =
+        modoDaltonismo
+            ? PaletaAcessivel.categoriasFixasDaltonismo
+            : PaletaAcessivel.categoriasFixasPadrao;
+
+    paleta.forEach((nomeCategoria, cor) {
+      corDasCategorias[nomeCategoria] = cor;
+
+      final botoes = categorias[nomeCategoria];
+      if (botoes == null) return;
+      for (var i = 0; i < botoes.length; i++) {
+        if (botoes[i].isFixo) {
+          botoes[i] = botoes[i].copyWith(color: cor);
+        }
+      }
+    });
+  }
+
+  void _onAcessibilidadeServiceChanged() {
+    if (!mounted) return;
+    final modoDaltonismo = context.read<AcessibilidadeService>().modoDaltonismo;
+    setState(() {
+      _aplicarPaletaCategoriasFixas(modoDaltonismo);
+    });
   }
 
   // PERSISTÊNCIA DE DADOS
@@ -497,19 +546,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _mostrarDialogoCriarCategoria(VoidCallback? onCategoriacriada) {
     final nomeController = TextEditingController();
-    Color corSelecionada = Colors.purple;
 
-    final coresDisponiveis = [
-      Colors.purple,
-      Colors.indigo,
-      Colors.brown,
-      Colors.deepPurple,
-      Colors.deepOrange,
-      Colors.amber,
-      Colors.cyan,
-      Colors.pink,
-      Colors.lime,
-    ];
+    final modoDaltonismo = context.read<AcessibilidadeService>().modoDaltonismo;
+
+    final coresDisponiveis =
+        modoDaltonismo
+            ? PaletaAcessivel.seletorDaltonismo
+            : const [
+              Colors.purple,
+              Colors.indigo,
+              Colors.brown,
+              Colors.deepPurple,
+              Colors.deepOrange,
+              Colors.amber,
+              Colors.cyan,
+              Colors.pink,
+              Colors.lime,
+            ];
+
+    Color corSelecionada = coresDisponiveis.first;
 
     showDialog(
       context: context,
@@ -667,6 +722,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     IconData iconSelecionado = Icons.star;
     String categoriaSelecionada = categorias.keys.first;
+    bool enviandoImagem = false;
     String? imagemSelecionada;
 
     // Lista de ícones disponíveis
@@ -814,22 +870,62 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
-                        onPressed: () async {
-                          final picker = ImagePicker();
-                          final picked = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (picked != null) {
-                            setDialogState(() {
-                              imagemSelecionada = picked.path;
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.add_photo_alternate),
+                        onPressed:
+                            enviandoImagem
+                                ? null
+                                : () async {
+                                  final picker = ImagePicker();
+                                  final picked = await picker.pickImage(
+                                    source: ImageSource.gallery,
+                                  );
+                                  if (picked == null) return;
+
+                                  setDialogState(() => enviandoImagem = true);
+
+                                  try {
+                                    final url =
+                                        await CloudinaryService.enviarImagem(
+                                          File(picked.path),
+                                          pasta: 'botoes',
+                                        );
+                                    setDialogState(() {
+                                      imagemSelecionada = url;
+                                      enviandoImagem = false;
+                                    });
+                                  } catch (e) {
+                                    setDialogState(
+                                      () => enviandoImagem = false,
+                                    );
+                                    if (stateContext.mounted) {
+                                      ScaffoldMessenger.of(
+                                        stateContext,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Erro ao enviar imagem: $e',
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                        icon:
+                            enviandoImagem
+                                ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Icon(Icons.add_photo_alternate),
                         label: Text(
-                          imagemSelecionada == null
-                              ? 'Procure na galeria'
-                              : 'Trocar Imagem',
+                          enviandoImagem
+                              ? 'Enviando imagem...'
+                              : (imagemSelecionada == null
+                                  ? 'Procure na galeria'
+                                  : 'Trocar Imagem'),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.indigo[700],
@@ -840,7 +936,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      if (imagemSelecionada != null)
+                      if (imagemSelecionada != null && !enviandoImagem)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
                           child: Container(
@@ -854,8 +950,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    File(imagemSelecionada!),
+                                  child: Image.network(
+                                    imagemSelecionada!,
                                     height: 60,
                                     width: 60,
                                     fit: BoxFit.cover,
@@ -956,55 +1052,65 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   child: const Text('Cancelar'),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () async {
-                    if (labelController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Digite o texto do botão'),
-                        ),
-                      );
-                      return;
-                    }
+                  onPressed:
+                      enviandoImagem
+                          ? null
+                          : () async {
+                            if (labelController.text.trim().isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Digite o texto do botão'),
+                                ),
+                              );
+                              return;
+                            }
 
-                    final corDaCategoria =
-                        corDasCategorias[categoriaSelecionada] ?? Colors.grey;
+                            final corDaCategoria =
+                                corDasCategorias[categoriaSelecionada] ??
+                                Colors.grey;
 
-                    final novoBotao = BotaoAAC(
-                      labelController.text.trim(),
-                      imagemSelecionada == null ? iconSelecionado : null,
-                      corDaCategoria,
-                      imagePath: imagemSelecionada,
-                    );
+                            final novoBotao = BotaoAAC(
+                              labelController.text.trim(),
+                              imagemSelecionada == null
+                                  ? iconSelecionado
+                                  : null,
+                              corDaCategoria,
+                              imagePath: imagemSelecionada,
+                            );
 
-                    Navigator.pop(dialogContext);
+                            Navigator.pop(dialogContext);
 
-                    // Garantir Tabs antes de alterar UI
-                    _updateTabControllerIfNeeded(
-                      preferIndex: categorias.keys.toList().indexOf(
-                        categoriaSelecionada,
-                      ),
-                    );
+                            // Garantir Tabs antes de alterar UI
+                            _updateTabControllerIfNeeded(
+                              preferIndex: categorias.keys.toList().indexOf(
+                                categoriaSelecionada,
+                              ),
+                            );
 
-                    WidgetsBinding.instance.addPostFrameCallback((_) async {
-                      if (!mounted) return;
+                            WidgetsBinding.instance.addPostFrameCallback((
+                              _,
+                            ) async {
+                              if (!mounted) return;
 
-                      _scrollController.jumpTo(0);
-                      setState(() {
-                        categorias[categoriaSelecionada]!.add(novoBotao);
-                      });
+                              _scrollController.jumpTo(0);
+                              setState(() {
+                                categorias[categoriaSelecionada]!.add(
+                                  novoBotao,
+                                );
+                              });
 
-                      await _salvarBotoesPersonalizados();
+                              await _salvarBotoesPersonalizados();
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Botão "${labelController.text.trim()}" criado!',
-                          ),
-                          backgroundColor: Colors.green[700],
-                        ),
-                      );
-                    });
-                  },
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Botão "${labelController.text.trim()}" criado!',
+                                  ),
+                                  backgroundColor: Colors.green[700],
+                                ),
+                              );
+                            });
+                          },
 
                   icon: const Icon(Icons.check),
                   label: const Text('Criar Botão'),
@@ -1394,6 +1500,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  // Resolve a imagem de um botão: asset embutido, URL do Cloudinary ou
+  // (legado) caminho de arquivo local no próprio aparelho.
+  Widget _buildImagemBotao(String imagePath) {
+    if (imagePath.startsWith('assets/')) {
+      return Image.asset(imagePath, fit: BoxFit.contain);
+    }
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.contain,
+        errorBuilder:
+            (context, error, stack) =>
+                const Icon(Icons.broken_image, color: Colors.black38),
+      );
+    }
+    return Image.file(
+      File(imagePath),
+      fit: BoxFit.contain,
+      errorBuilder:
+          (context, error, stack) =>
+              const Icon(Icons.broken_image, color: Colors.black38),
+    );
+  }
+
   Widget _buildCategoriaVazia() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1428,12 +1558,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               height: orientation == Orientation.portrait ? 60 : 45,
               child:
                   btn.imagePath != null
-                      ? (btn.imagePath!.startsWith('assets/')
-                          ? Image.asset(btn.imagePath!, fit: BoxFit.contain)
-                          : Image.file(
-                            File(btn.imagePath!),
-                            fit: BoxFit.contain,
-                          ))
+                      ? _buildImagemBotao(btn.imagePath!)
                       : Icon(
                         btn.icon ?? Icons.help_outline,
                         size: orientation == Orientation.portrait ? 34 : 28,

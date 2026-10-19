@@ -222,14 +222,10 @@ class SelecaoPerfilPage extends StatelessWidget {
                   children: [
                     if (perfil.foto != null)
                       ClipOval(
-                        child: Image.file(
-                          File(perfil.foto!),
-                          width: 90,
-                          height: 90,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stack) {
-                            return _buildIconeAvatar(perfil);
-                          },
+                        child: _buildFotoAvatar(
+                          perfil.foto!,
+                          size: 90,
+                          fallback: () => _buildIconeAvatar(perfil),
                         ),
                       )
                     else
@@ -313,6 +309,31 @@ class SelecaoPerfilPage extends StatelessWidget {
         border: Border.all(color: perfil.cor.withValues(alpha: 0.3), width: 2),
       ),
       child: Icon(perfil.icone, size: 45, color: perfil.cor),
+    );
+  }
+
+  // Resolve a foto do perfil: URL do Cloudinary ou (legado) caminho de
+  // arquivo local no próprio aparelho.
+  Widget _buildFotoAvatar(
+    String foto, {
+    required double size,
+    required Widget Function() fallback,
+  }) {
+    if (foto.startsWith('http')) {
+      return Image.network(
+        foto,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stack) => fallback(),
+      );
+    }
+    return Image.file(
+      File(foto),
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stack) => fallback(),
     );
   }
 }

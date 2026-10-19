@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto/models/perfil_model.dart';
 import 'package:projeto/pages/selecao_perfil_page.dart';
+import 'package:projeto/services/acessibilidade_service.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
@@ -21,6 +22,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     final authService = context.watch<AuthService>();
     final perfilService = context.watch<PerfilService>();
     final ttsService = context.watch<TtsService>();
+    final acessibilidadeService = context.watch<AcessibilidadeService>();
     final usuario = authService.usuario;
     final perfilAtivo = perfilService.perfilAtivo;
     final nomeUsuario = usuario?.displayName ?? usuario?.email ?? 'Usuário';
@@ -51,6 +53,12 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           //VOZ
           _buildSecaoHeader('Síntese de Voz', Icons.record_voice_over),
           _buildCardVoz(ttsService),
+
+          const SizedBox(height: 16),
+
+          //ACESSIBILIDADE
+          _buildSecaoHeader('Acessibilidade', Icons.accessibility_new),
+          _buildCardAcessibilidade(acessibilidadeService),
 
           const SizedBox(height: 16),
 
@@ -390,6 +398,33 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCardAcessibilidade(AcessibilidadeService acessibilidadeService) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: SwitchListTile(
+        secondary: Icon(
+          Icons.palette_outlined,
+          color: Colors.indigo[400],
+          size: 30,
+        ),
+        title: const Text(
+          'Modo daltonismo',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: const Text(
+          'Usa uma paleta de cores pensada para protanopia, '
+          'deuteranopia e tritanopia nas categorias e botões.',
+        ),
+        value: acessibilidadeService.modoDaltonismo,
+        onChanged: (ativo) {
+          acessibilidadeService.definirModoDaltonismo(ativo);
+        },
       ),
     );
   }

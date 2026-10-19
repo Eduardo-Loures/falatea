@@ -2,7 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:projeto/models/perfil_model.dart';
+import 'package:projeto/services/acessibilidade_service.dart';
+import 'package:projeto/services/cloudinary_service.dart';
 import 'package:projeto/services/perfil_service.dart';
+import 'package:projeto/utils/paleta_acessivel.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -98,14 +101,10 @@ class PerfisPage extends StatelessWidget {
             // Foto ou Ícone
             if (perfil.foto != null)
               ClipOval(
-                child: Image.file(
-                  File(perfil.foto!),
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stack) {
-                    return _buildIconeAvatar(perfil);
-                  },
+                child: _buildFotoAvatar(
+                  perfil.foto!,
+                  size: 80,
+                  fallback: () => _buildIconeAvatar(perfil),
                 ),
               )
             else
@@ -176,6 +175,39 @@ class PerfisPage extends StatelessWidget {
     );
   }
 
+  // Resolve a foto do perfil: URL do Cloudinary ou (legado) caminho de
+  // arquivo local no próprio aparelho.
+  Widget _buildFotoAvatar(
+    String foto, {
+    required double size,
+    required Widget Function() fallback,
+  }) {
+    if (foto.startsWith('http')) {
+      return Image.network(
+        foto,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stack) => fallback(),
+      );
+    }
+    return Image.file(
+      File(foto),
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stack) => fallback(),
+    );
+  }
+
+  // Preview simples usado dentro do diálogo de criar/editar perfil.
+  Widget _buildFotoPreview(String foto) {
+    if (foto.startsWith('http')) {
+      return Image.network(foto, width: 60, height: 60, fit: BoxFit.cover);
+    }
+    return Image.file(File(foto), width: 60, height: 60, fit: BoxFit.cover);
+  }
+
   Widget _buildIconeAvatar(Perfil perfil) {
     return Container(
       width: 80,
@@ -199,21 +231,28 @@ class PerfisPage extends StatelessWidget {
   void _mostrarDialogoPerfil(BuildContext context, Perfil? perfilExistente) {
     final nomeController = TextEditingController(text: perfilExistente?.nome);
     String? fotoPath = perfilExistente?.foto;
-    Color corSelecionada = perfilExistente?.cor ?? Colors.blue;
-    IconData iconeSelecionado = perfilExistente?.icone ?? Icons.person;
+    bool enviandoFoto = false;
 
-    final cores = [
-      Colors.blue,
-      Colors.red,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.pink,
-      Colors.teal,
-      Colors.amber,
-      Colors.indigo,
-      Colors.cyan,
-    ];
+    final modoDaltonismo = context.read<AcessibilidadeService>().modoDaltonismo;
+
+    final cores =
+        modoDaltonismo
+            ? PaletaAcessivel.seletorDaltonismo
+            : const [
+              Colors.blue,
+              Colors.red,
+              Colors.green,
+              Colors.orange,
+              Colors.purple,
+              Colors.pink,
+              Colors.teal,
+              Colors.amber,
+              Colors.indigo,
+              Colors.cyan,
+            ];
+
+    Color corSelecionada = perfilExistente?.cor ?? cores.first;
+    IconData iconeSelecionado = perfilExistente?.icone ?? Icons.person;
 
     final icones = [
       Icons.person,
@@ -255,34 +294,65 @@ class PerfisPage extends StatelessWidget {
 
                     // Botão Adicionar Foto
                     OutlinedButton.icon(
-                      onPressed: () async {
-                        final picker = ImagePicker();
-                        final picked = await picker.pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            fotoPath = picked.path;
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.add_photo_alternate),
+                      onPressed:
+                          enviandoFoto
+                              ? null
+                              : () async {
+                                final picker = ImagePicker();
+                                final picked = await picker.pickImage(
+                                  source: ImageSource.gallery,
+                                );
+                                if (picked == null) return;
+
+                                setState(() => enviandoFoto = true);
+
+                                try {
+                                  final url =
+                                      await CloudinaryService.enviarImagem(
+                                        File(picked.path),
+                                        pasta: 'perfis',
+                                      );
+                                  setState(() {
+                                    fotoPath = url;
+                                    enviandoFoto = false;
+                                  });
+                                } catch (e) {
+                                  setState(() => enviandoFoto = false);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Erro ao enviar foto: $e',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                      icon:
+                          enviandoFoto
+                              ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Icon(Icons.add_photo_alternate),
                       label: Text(
-                        fotoPath == null ? 'Adicionar Foto' : 'Alterar Foto',
+                        enviandoFoto
+                            ? 'Enviando foto...'
+                            : (fotoPath == null
+                                ? 'Adicionar Foto'
+                                : 'Alterar Foto'),
                       ),
                     ),
 
-                    if (fotoPath != null)
+                    if (fotoPath != null && !enviandoFoto)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
-                        child: ClipOval(
-                          child: Image.file(
-                            File(fotoPath!),
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                        child: ClipOval(child: _buildFotoPreview(fotoPath!)),
                       ),
 
                     const SizedBox(height: 16),
