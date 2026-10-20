@@ -5,6 +5,7 @@ import 'package:projeto/services/acessibilidade_service.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
+import 'package:projeto/widgets/avisos.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto/pages/gerenciar_categorias_page.dart';
 
@@ -331,43 +332,29 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           const Divider(height: 1),
 
           // Velocidade da Fala
-          ListTile(
-            leading: const Icon(Icons.speed, color: Colors.indigo),
-            title: const Text(
-              'Velocidade',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Slider(
-              value: ttsService.velocidadeFala,
-              min: 0.3,
-              max: 1.0,
-              divisions: 7,
-              label: '${(ttsService.velocidadeFala * 100).toInt()}%',
-              onChanged: (valor) {
-                ttsService.setVelocidade(valor);
-              },
-            ),
+          _buildOpcoesVoz(
+            icone: Icons.speed,
+            titulo: 'Velocidade',
+            opcoes: TtsService.velocidades,
+            valor: ttsService.velocidadeFala,
+            onSelecionar: (valor) async {
+              await ttsService.setVelocidade(valor);
+              ttsService.testarVoz();
+            },
           ),
 
           const Divider(height: 1),
 
           // Tom de Voz
-          ListTile(
-            leading: const Icon(Icons.graphic_eq, color: Colors.indigo),
-            title: const Text(
-              'Tom',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Slider(
-              value: ttsService.tomVoz,
-              min: 0.5,
-              max: 2.0,
-              divisions: 15,
-              label: ttsService.tomVoz.toStringAsFixed(1),
-              onChanged: (valor) {
-                ttsService.setTom(valor);
-              },
-            ),
+          _buildOpcoesVoz(
+            icone: Icons.graphic_eq,
+            titulo: 'Tom',
+            opcoes: TtsService.tons,
+            valor: ttsService.tomVoz,
+            onSelecionar: (valor) async {
+              await ttsService.setTom(valor);
+              ttsService.testarVoz();
+            },
           ),
 
           const Divider(height: 1),
@@ -395,6 +382,43 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                 const SizedBox(height: 8),
                 const SizedBox(height: 12),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOpcoesVoz({
+    required IconData icone,
+    required String titulo,
+    required Map<String, double> opcoes,
+    required double valor,
+    required ValueChanged<double> onSelecionar,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icone, color: Colors.indigo),
+              const SizedBox(width: 16),
+              Text(titulo, style: const TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<double>(
+              showSelectedIcon: false,
+              segments: [
+                for (final opcao in opcoes.entries)
+                  ButtonSegment(value: opcao.value, label: Text(opcao.key)),
+              ],
+              selected: {valor},
+              onSelectionChanged: (selecao) => onSelecionar(selecao.first),
             ),
           ),
         ],
@@ -483,105 +507,72 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             'Comunicação Aumentativa e Alternativa',
             style: TextStyle(fontSize: 12, color: Colors.grey[500]),
           ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Pictogramas: Sergio Palao / ARASAAC (arasaac.org), '
+              'licença CC BY-NC-SA, propriedade do Governo de Aragão.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+            ),
+          ),
           const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  void _confirmarSair(BuildContext context, AuthService authService) {
+  Future<void> _confirmarSair(
+    BuildContext context,
+    AuthService authService,
+  ) async {
+    final confirmou = await confirmarAcao(
+      context,
+      titulo: 'Sair',
+      mensagem:
+          'Deseja realmente sair da sua conta?\nVocê precisará fazer login novamente.',
+      textoConfirmar: 'Sair',
+      icone: Icons.logout_rounded,
+    );
+    if (!confirmou || !context.mounted) return;
+
     showDialog(
       context: context,
-      barrierDismissible: false, // Impede fechar clicando fora
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      barrierDismissible: false,
+      builder: (loadingContext) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
-          title: Row(
-            children: [
-              Icon(Icons.logout, color: Colors.red[700]),
-              const SizedBox(width: 12),
-              const Text('Sair'),
-            ],
-          ),
-          content: const Text(
-            'Deseja realmente sair da sua conta?\n\nVocê precisará fazer login novamente.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(dialogContext).pop();
-
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (loadingContext) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    );
-                  },
-                );
-
-                try {
-                  // IMPORTANTE: Limpa dados da MEMÓRIA (não deleta do storage)
-                  final perfilService = context.read<PerfilService>();
-                  perfilService.limparDadosMemoria(); // Apenas limpa da RAM
-
-                  // Faz logout
-                  await authService.logout();
-
-                  await Future.delayed(const Duration(milliseconds: 300));
-
-                  if (context.mounted) {
-                    Navigator.of(context).pop(); // Fecha loading
-                    Navigator.of(
-                      context,
-                    ).pushNamedAndRemoveUntil('/', (route) => false);
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text('Erro ao fazer logout: $e')),
-                          ],
-                        ),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 4),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                  debugPrint('❌ Erro no logout: $e');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-              ),
-              child: const Text('Sair'),
-            ),
-          ],
         );
       },
     );
+
+    try {
+      // IMPORTANTE: Limpa dados da MEMÓRIA (não deleta do storage)
+      final perfilService = context.read<PerfilService>();
+      perfilService.limparDadosMemoria(); // Apenas limpa da RAM
+
+      // Faz logout
+      await authService.logout();
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Fecha loading
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        mostrarAviso(
+          context,
+          'Erro ao sair da conta: $e',
+          tipo: TipoAviso.erro,
+        );
+      }
+      debugPrint('❌ Erro no logout: $e');
+    }
   }
 }

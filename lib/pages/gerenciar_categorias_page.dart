@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto/services/perfil_service.dart';
+import 'package:projeto/widgets/avisos.dart';
 import 'package:projeto/pages/home_page.dart';
 
 class GerenciarCategoriasPage extends StatelessWidget {
@@ -50,43 +51,27 @@ class GerenciarCategoriasPage extends StatelessWidget {
   }
 
   void _confirmarExclusao(BuildContext context, String categoria) async {
-    final bool? confirmar = await showDialog<bool>(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Excluir categoria'),
-            content: Text(
-              'Tem certeza que deseja excluir "$categoria"?\n'
-              'Todos os botões desta categoria serão removidos.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Excluir'),
-              ),
-            ],
-          ),
+    final confirmar = await confirmarAcao(
+      context,
+      titulo: 'Excluir categoria',
+      mensagem:
+          'Tem certeza que deseja excluir "$categoria"?\n'
+          'Todos os botões desta categoria serão removidos.',
+      textoConfirmar: 'Excluir',
     );
 
-    if (confirmar != true) return;
+    if (!confirmar || !context.mounted) return;
 
     final perfilService = context.read<PerfilService>();
     await perfilService.excluirCategoria(categoria);
 
+    if (!context.mounted) return;
+
     // Volta para a tela e mostra feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Categoria "$categoria" excluída'),
-        backgroundColor: Colors.red,
-      ),
+    mostrarAviso(
+      context,
+      'Categoria "$categoria" excluída.',
+      tipo: TipoAviso.sucesso,
     );
 
     Navigator.pop(context);

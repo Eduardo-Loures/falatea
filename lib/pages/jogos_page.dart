@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:projeto/games/escolher_game.dart';
 import 'package:projeto/games/emocoes_game.dart';
+import 'package:projeto/games/cores_game.dart';
+import 'package:projeto/games/rotina_game.dart';
 
 class JogosPage extends StatelessWidget {
   const JogosPage({super.key});
@@ -73,6 +75,48 @@ class JogosPage extends StatelessWidget {
                   context,
 
                   MaterialPageRoute(builder: (_) => const EmocoesGame()),
+                );
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+            // JOGO 3
+            _buildJogoCard(
+              context: context,
+
+              titulo: 'Cores',
+
+              descricao: 'Associe cada cor ao seu nome.',
+
+              imagem: 'assets/jogos/cores.png',
+
+              onTap: () {
+                Navigator.push(
+                  context,
+
+                  MaterialPageRoute(builder: (_) => const CoresGame()),
+                );
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+            // JOGO 4
+            _buildJogoCard(
+              context: context,
+
+              titulo: 'Minha Rotina',
+
+              descricao: 'Coloque os passos do dia a dia na ordem.',
+
+              imagem: 'assets/jogos/rotina.png',
+
+              onTap: () {
+                Navigator.push(
+                  context,
+
+                  MaterialPageRoute(builder: (_) => const RotinaGame()),
                 );
               },
             ),

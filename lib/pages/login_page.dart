@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto/services/auth_services.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto/pages/modo_page.dart';
+import 'package:projeto/widgets/avisos.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -68,9 +69,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (erro != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(erro), backgroundColor: Colors.red[700]),
-        );
+        mostrarAviso(context, erro, tipo: TipoAviso.erro);
       } else {
         if (!mounted) return;
 
@@ -80,9 +79,9 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      if (mounted) {
+        mostrarAviso(context, 'Erro: $e', tipo: TipoAviso.erro);
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -104,26 +103,13 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         if (erro != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(erro), backgroundColor: Colors.red[700]),
-          );
+          mostrarAviso(context, erro, tipo: TipoAviso.erro);
         } else {
           // MOSTRA A MENSAGEM DE SUCESSO
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Bem-vindo(a), ${nome.text.trim()}!\nConta criada com sucesso.',
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.green[700],
-            ),
+          mostrarAviso(
+            context,
+            'Bem-vindo(a), ${nome.text.trim()}!\nConta criada com sucesso.',
+            tipo: TipoAviso.sucesso,
           );
 
           // Aguarda o snackbar
@@ -140,13 +126,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro inesperado: $e'),
-            backgroundColor: Colors.red[700],
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        mostrarAviso(context, 'Erro inesperado: $e', tipo: TipoAviso.erro);
       }
     } finally {
       if (mounted) setState(() => isLoading = false);

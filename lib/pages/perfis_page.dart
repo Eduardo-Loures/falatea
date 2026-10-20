@@ -6,6 +6,7 @@ import 'package:projeto/services/acessibilidade_service.dart';
 import 'package:projeto/services/cloudinary_service.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/utils/paleta_acessivel.dart';
+import 'package:projeto/widgets/avisos.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -175,8 +176,7 @@ class PerfisPage extends StatelessWidget {
     );
   }
 
-  // Resolve a foto do perfil: URL do Cloudinary ou (legado) caminho de
-  // arquivo local no próprio aparelho.
+  // Foto do perfil: URL ou arquivo local
   Widget _buildFotoAvatar(
     String foto, {
     required double size,
@@ -200,7 +200,7 @@ class PerfisPage extends StatelessWidget {
     );
   }
 
-  // Preview simples usado dentro do diálogo de criar/editar perfil.
+  // Preview da foto no diálogo
   Widget _buildFotoPreview(String foto) {
     if (foto.startsWith('http')) {
       return Image.network(foto, width: 60, height: 60, fit: BoxFit.cover);
@@ -253,6 +253,8 @@ class PerfisPage extends StatelessWidget {
 
     Color corSelecionada = perfilExistente?.cor ?? cores.first;
     IconData iconeSelecionado = perfilExistente?.icone ?? Icons.person;
+    String? erroNome;
+    String? erroFoto;
 
     final icones = [
       Icons.person,
@@ -274,7 +276,7 @@ class PerfisPage extends StatelessWidget {
           builder: (context, setState) {
             return AlertDialog(
               title: Text(
-                perfilExistente == null ? 'Criar Perfil' : 'Editar Perfil',
+                perfilExistente == null ? 'Novo perfil' : 'Editar perfil',
               ),
               content: SingleChildScrollView(
                 child: Column(
@@ -283,10 +285,11 @@ class PerfisPage extends StatelessWidget {
                     // Campo Nome
                     TextField(
                       controller: nomeController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Nome',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person_outline),
+                        errorText: erroNome,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.person_outline),
                       ),
                       textCapitalization: TextCapitalization.words,
                     ),
@@ -304,7 +307,10 @@ class PerfisPage extends StatelessWidget {
                                 );
                                 if (picked == null) return;
 
-                                setState(() => enviandoFoto = true);
+                                setState(() {
+                                  enviandoFoto = true;
+                                  erroFoto = null;
+                                });
 
                                 try {
                                   final url =
@@ -317,17 +323,12 @@ class PerfisPage extends StatelessWidget {
                                     enviandoFoto = false;
                                   });
                                 } catch (e) {
-                                  setState(() => enviandoFoto = false);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Erro ao enviar foto: $e',
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
+                                  setState(() {
+                                    enviandoFoto = false;
+                                    erroFoto =
+                                        'Não foi possível enviar a foto. Tente novamente.';
+                                  });
+                                  debugPrint('Erro ao enviar foto: $e');
                                 }
                               },
                       icon:
@@ -348,6 +349,18 @@ class PerfisPage extends StatelessWidget {
                                 : 'Alterar Foto'),
                       ),
                     ),
+
+                    if (erroFoto != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          erroFoto!,
+                          style: TextStyle(
+                            color: Colors.red[700],
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
 
                     if (fotoPath != null && !enviandoFoto)
                       Padding(
@@ -459,12 +472,11 @@ class PerfisPage extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancelar'),
                 ),
-                ElevatedButton(
+                FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: Colors.indigo),
                   onPressed: () async {
                     if (nomeController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Digite um nome!')),
-                      );
+                      setState(() => erroNome = 'Digite um nome');
                       return;
                     }
 
@@ -481,10 +493,11 @@ class PerfisPage extends StatelessWidget {
                       );
                       await perfilService.criarPerfil(novoPerfil);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Perfil "${novoPerfil.nome}" criado!'),
-                        ),
+                      if (!context.mounted) return;
+                      mostrarAviso(
+                        context,
+                        'Perfil "${novoPerfil.nome}" criado!',
+                        tipo: TipoAviso.sucesso,
                       );
                     } else {
                       // Editar existente
@@ -496,8 +509,11 @@ class PerfisPage extends StatelessWidget {
                       );
                       await perfilService.atualizarPerfil(perfilAtualizado);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Perfil atualizado!')),
+                      if (!context.mounted) return;
+                      mostrarAviso(
+                        context,
+                        'Perfil atualizado!',
+                        tipo: TipoAviso.sucesso,
                       );
                     }
 
@@ -513,38 +529,26 @@ class PerfisPage extends StatelessWidget {
     );
   }
 
-  void _confirmarExclusao(
+  Future<void> _confirmarExclusao(
     BuildContext context,
     Perfil perfil,
     PerfilService perfilService,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Excluir Perfil'),
-          content: Text(
-            'Deseja excluir o perfil de "${perfil.nome}"?\n\nTodos os botões personalizados deste perfil serão perdidos.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await perfilService.excluirPerfil(perfil.id);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Perfil "${perfil.nome}" excluído')),
-                );
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+  ) async {
+    final confirmou = await confirmarAcao(
+      context,
+      titulo: 'Excluir perfil',
+      mensagem:
+          'Deseja excluir o perfil de "${perfil.nome}"?\nTodos os botões personalizados deste perfil serão perdidos.',
+      textoConfirmar: 'Excluir',
+    );
+    if (!confirmou) return;
+
+    await perfilService.excluirPerfil(perfil.id);
+    if (!context.mounted) return;
+    mostrarAviso(
+      context,
+      'Perfil "${perfil.nome}" excluído.',
+      tipo: TipoAviso.sucesso,
     );
   }
 }

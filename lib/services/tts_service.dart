@@ -4,6 +4,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 
 class TtsService extends ChangeNotifier {
+  // Opções de velocidade e tom (0.5 = velocidade normal do sistema)
+  static const Map<String, double> velocidades = {
+    'Devagar': 0.38,
+    'Normal': 0.5,
+    'Rápida': 0.62,
+  };
+
+  static const Map<String, double> tons = {
+    'Grave': 0.85,
+    'Normal': 1.0,
+    'Agudo': 1.15,
+  };
+
   final FlutterTts _tts = FlutterTts();
 
   bool _vozFeminina = true;
@@ -73,13 +86,23 @@ class TtsService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _vozFeminina = prefs.getBool('tts_voz_feminina') ?? true;
-      _velocidadeFala = prefs.getDouble('tts_velocidade') ?? 0.5;
-      _tomVoz = prefs.getDouble('tts_tom') ?? 1.0;
+      _velocidadeFala = _maisProximo(
+        prefs.getDouble('tts_velocidade') ?? 0.5,
+        velocidades.values,
+      );
+      _tomVoz = _maisProximo(prefs.getDouble('tts_tom') ?? 1.0, tons.values);
       _volume = prefs.getDouble('tts_volume') ?? 1.0;
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Erro ao carregar config: $e');
     }
+  }
+
+  // Ajusta valores salvos por versões antigas (sliders) para a opção mais próxima
+  double _maisProximo(double valor, Iterable<double> opcoes) {
+    return opcoes.reduce(
+      (a, b) => (valor - a).abs() <= (valor - b).abs() ? a : b,
+    );
   }
 
   Future<void> _salvarConfiguracoes() async {
@@ -101,9 +124,7 @@ class TtsService extends ChangeNotifier {
       await _tts.setSpeechRate(_velocidadeFala);
       await _tts.setVolume(_volume);
 
-      // Define o pitch (tom) baseado no gênero
-      double pitchAjustado = _vozFeminina ? _tomVoz * 1.2 : _tomVoz * 0.9;
-      await _tts.setPitch(pitchAjustado);
+      await _tts.setPitch(_tomVoz);
 
       // ESTRATÉGIA: Tenta usar vozes de alta qualidade, se não conseguir usa offline
       bool vozDefinida = false;
@@ -203,17 +224,17 @@ class TtsService extends ChangeNotifier {
   }
 
   Future<void> setVelocidade(double velocidade) async {
-    _velocidadeFala = velocidade.clamp(0.3, 1.0);
+    _velocidadeFala = _maisProximo(velocidade, velocidades.values);
+    notifyListeners();
     await _tts.setSpeechRate(_velocidadeFala);
     await _salvarConfiguracoes();
-    notifyListeners();
   }
 
   Future<void> setTom(double tom) async {
-    _tomVoz = tom.clamp(0.5, 2.0);
-    await _aplicarConfiguracoes();
-    await _salvarConfiguracoes();
+    _tomVoz = _maisProximo(tom, tons.values);
     notifyListeners();
+    await _tts.setPitch(_tomVoz);
+    await _salvarConfiguracoes();
   }
 
   Future<void> setVolume(double volume) async {

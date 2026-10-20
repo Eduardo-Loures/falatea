@@ -216,44 +216,52 @@ class SelecaoPerfilPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Foto ou Ícone
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (perfil.foto != null)
-                      ClipOval(
-                        child: _buildFotoAvatar(
-                          perfil.foto!,
-                          size: 90,
-                          fallback: () => _buildIconeAvatar(perfil),
-                        ),
-                      )
-                    else
-                      _buildIconeAvatar(perfil),
+                // Foto ou Ícone (encolhe se faltar espaço)
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (perfil.foto != null)
+                          ClipOval(
+                            child: _buildFotoAvatar(
+                              perfil.foto!,
+                              size: 90,
+                              fallback: () => _buildIconeAvatar(perfil),
+                            ),
+                          )
+                        else
+                          _buildIconeAvatar(perfil),
 
-                    // Badge de perfil ativo
-                    if (isAtivo)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+                        // Badge de perfil ativo
+                        if (isAtivo)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // Nome
                 Text(
@@ -312,8 +320,7 @@ class SelecaoPerfilPage extends StatelessWidget {
     );
   }
 
-  // Resolve a foto do perfil: URL do Cloudinary ou (legado) caminho de
-  // arquivo local no próprio aparelho.
+  // Foto do perfil: URL ou arquivo local
   Widget _buildFotoAvatar(
     String foto, {
     required double size,

@@ -9,6 +9,7 @@ import 'package:projeto/services/cloudinary_service.dart';
 import 'package:projeto/services/perfil_service.dart';
 import 'package:projeto/services/tts_service.dart';
 import 'package:projeto/utils/paleta_acessivel.dart';
+import 'package:projeto/widgets/avisos.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'dart:collection';
@@ -65,9 +66,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // Aplica a paleta de cores das categorias fixas (normal ou segura
-    // para daltonismo, conforme a preferência salva nas Configurações)
-    // ANTES de montar os botões predefinidos, que usam essas cores.
+    // Aplica a paleta antes de montar os botões predefinidos
     _aplicarPaletaCategoriasFixas(
       context.read<AcessibilidadeService>().modoDaltonismo,
     );
@@ -275,10 +274,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  // Aplica a paleta de cor (normal ou segura para daltonismo) nas 5
-  // categorias fixas: atualiza corDasCategorias e, se os botões
-  // predefinidos já existirem, recolore apenas os botões fixos (os
-  // personalizados mantêm a cor que o usuário escolheu).
+  // Aplica a paleta (normal ou daltonismo) nas categorias fixas
   void _aplicarPaletaCategoriasFixas(bool modoDaltonismo) {
     final paleta =
         modoDaltonismo
@@ -435,32 +431,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _updateTabControllerIfNeeded({int? preferIndex}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
-      final newLength = categorias.length;
-
-      if (tabController.length == newLength) return;
-
-      final safeIndex = (preferIndex ?? tabController.index).clamp(
-        0,
-        newLength - 1,
-      );
-
-      tabController.dispose();
-
-      tabController = TabController(
-        length: newLength,
-        vsync: this,
-        initialIndex: safeIndex,
-      );
-
-      tabController.addListener(() {
-        if (tabController.indexIsChanging) {
-          _scrollToCategory(tabController.index);
-        }
-      });
-
-      setState(() {}); // força rebuild
+      setState(() => _sincronizarTabController(preferIndex: preferIndex));
     });
+  }
+
+  // Recria o TabController quando o número de categorias muda.
+  // Também é chamado no build, para as abas nunca ficarem dessincronizadas.
+  void _sincronizarTabController({int? preferIndex}) {
+    final newLength = categorias.length;
+
+    if (newLength == 0 || tabController.length == newLength) return;
+
+    final antigo = tabController;
+
+    final safeIndex = (preferIndex ?? antigo.index).clamp(0, newLength - 1);
+
+    tabController = TabController(
+      length: newLength,
+      vsync: this,
+      initialIndex: safeIndex,
+    );
+
+    tabController.addListener(() {
+      if (tabController.indexIsChanging) {
+        _scrollToCategory(tabController.index);
+      }
+    });
+
+    // O TabBar ainda usa o antigo neste frame
+    WidgetsBinding.instance.addPostFrameCallback((_) => antigo.dispose());
   }
 
   // MANIPULAÇÃO DE FALA
@@ -478,11 +477,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   // GERENCIAMENTO DE BOTÕES PERSONALIZADOS
-  void _mostrarDialogoExcluirBotao(BotaoAAC botao) {
+  Future<void> _mostrarDialogoExcluirBotao(BotaoAAC botao) async {
     if (botao.isFixo) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Este botão não pode ser excluído.')),
-      );
+      mostrarAviso(context, 'Este botão não pode ser excluído.');
       return;
     }
 
@@ -495,53 +492,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     if (categoriaEncontrada == null) return;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Excluir botão'),
-          content: Text('Deseja excluir o botão "${botao.label}"?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                _scrollController.jumpTo(0);
-                setState(() {
-                  categorias[categoriaEncontrada!]!.remove(botao);
-                });
-                // Garantir tabs atualizadas
-                _updateTabControllerIfNeeded(
-                  preferIndex: categorias.keys.toList().indexOf(
-                    categoriaEncontrada!,
-                  ),
-                );
-
-                await _salvarBotoesPersonalizados();
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Botão excluído com sucesso!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30), // o
-                ),
-              ),
-              child: const Text("Excluir"),
-            ),
-          ],
-        );
-      },
+    final confirmou = await confirmarAcao(
+      context,
+      titulo: 'Excluir botão',
+      mensagem: 'Deseja excluir o botão "${botao.label}"?',
+      textoConfirmar: 'Excluir',
     );
+    if (!confirmou || !mounted) return;
+
+    _scrollController.jumpTo(0);
+    setState(() {
+      categorias[categoriaEncontrada!]!.remove(botao);
+    });
+    // Garantir tabs atualizadas
+    _updateTabControllerIfNeeded(
+      preferIndex: categorias.keys.toList().indexOf(categoriaEncontrada!),
+    );
+
+    await _salvarBotoesPersonalizados();
+    if (!mounted) return;
+    mostrarAviso(context, 'Botão excluído.', tipo: TipoAviso.sucesso);
   }
 
   void _mostrarDialogoCriarCategoria(VoidCallback? onCategoriacriada) {
@@ -565,6 +535,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ];
 
     Color corSelecionada = coresDisponiveis.first;
+    String? erroNome;
 
     showDialog(
       context: context,
@@ -572,16 +543,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: const Row(
-                children: [
-                  Icon(Icons.create_new_folder, color: Colors.green),
-                  SizedBox(width: 12),
-                  Text('Nova Categoria', style: TextStyle(fontSize: 18)),
-                ],
-              ),
+              title: const Text('Nova categoria'),
 
               content: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -596,6 +558,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         controller: nomeController,
                         decoration: InputDecoration(
                           labelText: 'Nome da categoria',
+                          errorText: erroNome,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -666,26 +629,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   onPressed: () => Navigator.pop(dialogContext),
                   child: const Text('Cancelar'),
                 ),
-                ElevatedButton.icon(
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(backgroundColor: Colors.indigo),
                   icon: const Icon(Icons.add),
-                  label: const Text("Criar"),
+                  label: const Text('Criar'),
                   onPressed: () {
                     final nome = nomeController.text.trim();
 
                     if (nome.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Digite o nome da categoria"),
-                        ),
+                      setDialogState(
+                        () => erroNome = 'Digite o nome da categoria',
                       );
                       return;
                     }
 
                     if (categorias.containsKey(nome)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Essa categoria já existe"),
-                        ),
+                      setDialogState(
+                        () => erroNome = 'Essa categoria já existe',
                       );
                       return;
                     }
@@ -724,6 +684,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     String categoriaSelecionada = categorias.keys.first;
     bool enviandoImagem = false;
     String? imagemSelecionada;
+    String? erroTexto;
+    String? erroImagem;
 
     // Lista de ícones disponíveis
     final Map<String, IconData> iconesDisponiveis = {
@@ -749,15 +711,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return StatefulBuilder(
           builder: (stateContext, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: const Center(
-                child: Text(
-                  'Criar novo botão',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
+              title: const Text('Novo botão'),
               content: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.75,
@@ -771,6 +725,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         controller: labelController,
                         decoration: InputDecoration(
                           labelText: 'Texto do botão',
+                          errorText: erroTexto,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -880,7 +835,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   );
                                   if (picked == null) return;
 
-                                  setDialogState(() => enviandoImagem = true);
+                                  setDialogState(() {
+                                    enviandoImagem = true;
+                                    erroImagem = null;
+                                  });
 
                                   try {
                                     final url =
@@ -893,21 +851,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       enviandoImagem = false;
                                     });
                                   } catch (e) {
-                                    setDialogState(
-                                      () => enviandoImagem = false,
-                                    );
-                                    if (stateContext.mounted) {
-                                      ScaffoldMessenger.of(
-                                        stateContext,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Erro ao enviar imagem: $e',
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
+                                    setDialogState(() {
+                                      enviandoImagem = false;
+                                      erroImagem =
+                                          'Não foi possível enviar a imagem. Tente novamente.';
+                                    });
+                                    debugPrint('Erro ao enviar imagem: $e');
                                   }
                                 },
                         icon:
@@ -936,6 +885,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
+                      if (erroImagem != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            erroImagem!,
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
                       if (imagemSelecionada != null && !enviandoImagem)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
@@ -1051,16 +1011,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   onPressed: () => Navigator.pop(dialogContext),
                   child: const Text('Cancelar'),
                 ),
-                ElevatedButton.icon(
+                FilledButton.icon(
                   onPressed:
                       enviandoImagem
                           ? null
                           : () async {
                             if (labelController.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Digite o texto do botão'),
-                                ),
+                              setDialogState(
+                                () => erroTexto = 'Digite o texto do botão',
                               );
                               return;
                             }
@@ -1101,27 +1059,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                               await _salvarBotoesPersonalizados();
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Botão "${labelController.text.trim()}" criado!',
-                                  ),
-                                  backgroundColor: Colors.green[700],
-                                ),
+                              if (!mounted) return;
+                              mostrarAviso(
+                                context,
+                                'Botão "${labelController.text.trim()}" criado!',
+                                tipo: TipoAviso.sucesso,
                               );
                             });
                           },
 
                   icon: const Icon(Icons.check),
-                  label: const Text('Criar Botão'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo[700],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                  ),
+                  label: const Text('Criar'),
+                  style: FilledButton.styleFrom(backgroundColor: Colors.indigo),
                 ),
               ],
             );
@@ -1134,6 +1083,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // CONSTRUÇÃO DA INTERFACE
   @override
   Widget build(BuildContext context) {
+    _sincronizarTabController();
+
     _currentOrientation = MediaQuery.of(context).orientation;
 
     // Verifica se está em modo paisagem
@@ -1227,41 +1178,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     );
                   } else if (value == 'limpar_dados') {
-                    bool? confirmar = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: const Text('Limpar dados'),
-                            content: Text(
-                              'Isso removerá todos os botões personalizados de ${perfilAtivo?.nome}. Deseja continuar?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancelar'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                child: const Text('Limpar'),
-                              ),
-                            ],
-                          ),
+                    final confirmar = await confirmarAcao(
+                      context,
+                      titulo: 'Limpar dados',
+                      mensagem:
+                          'Isso removerá todos os botões personalizados de ${perfilAtivo?.nome}. Deseja continuar?',
+                      textoConfirmar: 'Limpar',
+                      icone: Icons.cleaning_services_rounded,
                     );
 
-                    if (confirmar == true) {
+                    if (confirmar && context.mounted) {
                       await _limparDadosSalvos();
                       setState(() {
                         categorias.forEach((categoria, botoes) {
                           botoes.removeWhere((botao) => !botao.isFixo);
                         });
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Dados limpos com sucesso!'),
-                        ),
+                      if (!context.mounted) return;
+                      mostrarAviso(
+                        context,
+                        'Dados limpos.',
+                        tipo: TipoAviso.sucesso,
                       );
                     }
                   } else if (value == 'trocar_perfil') {
@@ -1272,41 +1209,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     );
                   } else if (value == 'logout') {
-                    bool? confirmar = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: const Text('Sair'),
-                            content: const Text(
-                              'Deseja realmente sair da sua conta?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancelar'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                child: const Text('Sair'),
-                              ),
-                            ],
-                          ),
+                    final confirmar = await confirmarAcao(
+                      context,
+                      titulo: 'Sair',
+                      mensagem: 'Deseja realmente sair da sua conta?',
+                      textoConfirmar: 'Sair',
+                      icone: Icons.logout_rounded,
                     );
 
-                    if (confirmar == true) {
+                    if (confirmar && context.mounted) {
                       try {
                         await context.read<AuthService>().logout();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Logout realizado com sucesso!'),
-                          ),
+                        if (!context.mounted) return;
+                        mostrarAviso(
+                          context,
+                          'Você saiu da sua conta.',
+                          tipo: TipoAviso.sucesso,
                         );
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Erro ao fazer logout: $e')),
+                        if (!context.mounted) return;
+                        mostrarAviso(
+                          context,
+                          'Erro ao sair da conta: $e',
+                          tipo: TipoAviso.erro,
                         );
                       }
                     }
@@ -1500,8 +1425,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // Resolve a imagem de um botão: asset embutido, URL do Cloudinary ou
-  // (legado) caminho de arquivo local no próprio aparelho.
+  // Imagem do botão: asset, URL ou arquivo local
   Widget _buildImagemBotao(String imagePath) {
     if (imagePath.startsWith('assets/')) {
       return Image.asset(imagePath, fit: BoxFit.contain);

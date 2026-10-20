@@ -29,84 +29,97 @@ class ModoPage extends StatelessWidget {
         ),
 
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
+          child: LayoutBuilder(
+            builder:
+                (context, constraints) => SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
 
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - 48,
+                    ),
 
-              children: [
-                // LOGO
-                SizedBox(
-                  height: 320,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
 
-                  child: Image.asset(
-                    'assets/logo/falatea.png',
-                    fit: BoxFit.contain,
+                      children: [
+                        // LOGO
+                        SizedBox(
+                          height: 320,
+
+                          child: Image.asset(
+                            'assets/logo/falatea.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+
+                        const SizedBox(height: 0),
+                        const Text(
+                          'Escolha um modo',
+
+                          style: TextStyle(fontSize: 18, color: Colors.white70),
+                        ),
+
+                        const SizedBox(height: 60),
+
+                        // BOTÃO AAC
+                        _buildModoButton(
+                          context: context,
+
+                          titulo: 'Comunicação',
+
+                          subtitulo: 'Utilize os botões AAC para comunicação.',
+
+                          imagem: 'assets/logo/comunicacao.png',
+
+                          onTap: () async {
+                            final perfilService = context.read<PerfilService>();
+
+                            await perfilService.carregarDadosUsuario();
+
+                            if (perfilService.temPerfis) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const HomePage(),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SelecaoPerfilPage(),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        // BOTÃO GAME
+                        _buildModoButton(
+                          context: context,
+
+                          titulo: 'Jogos',
+
+                          subtitulo: 'Evolua relacionando imagens.',
+
+                          imagem: 'assets/logo/jogos.png',
+
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const JogosPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-
-                const SizedBox(height: 0),
-                const Text(
-                  'Escolha um modo',
-
-                  style: TextStyle(fontSize: 18, color: Colors.white70),
-                ),
-
-                const SizedBox(height: 60),
-
-                // BOTÃO AAC
-                _buildModoButton(
-                  context: context,
-
-                  titulo: 'Comunicação',
-
-                  subtitulo: 'Utilize os botões AAC para comunicação.',
-
-                  imagem: 'assets/logo/comunicacao.png',
-
-                  onTap: () async {
-                    final perfilService = context.read<PerfilService>();
-
-                    await perfilService.carregarDadosUsuario();
-
-                    if (perfilService.temPerfis) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const HomePage()),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SelecaoPerfilPage(),
-                        ),
-                      );
-                    }
-                  },
-                ),
-
-                const SizedBox(height: 25),
-
-                // BOTÃO GAME
-                _buildModoButton(
-                  context: context,
-
-                  titulo: 'Jogos',
-
-                  subtitulo: 'Evolua relacionando imagens.',
-
-                  imagem: 'assets/logo/jogos.png',
-
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const JogosPage()),
-                    );
-                  },
-                ),
-              ],
-            ),
           ),
         ),
       ),

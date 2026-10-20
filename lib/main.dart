@@ -47,7 +47,33 @@ class FalaTEA extends StatelessWidget {
     return MaterialApp(
       title: 'FalaTEA',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo),
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        dialogTheme: DialogThemeData(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          titleTextStyle: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+
+      // Limita o tamanho da fonte do celular
+      builder:
+          (context, child) => MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: child!,
+          ),
 
       routes: {
         '/login': (_) => const LoginPage(),

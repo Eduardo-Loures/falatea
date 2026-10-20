@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Paletas de cor usadas pelo "Modo daltonismo".
-///
-/// A paleta segura é baseada nas paletas Okabe-Ito e IBM Color Blind
-/// Safe Palette, escolhidas para ficarem distinguíveis entre si tanto
-/// para quem tem visão normal quanto para protanopia, deuteranopia e
-/// tritanopia (os tipos mais comuns de daltonismo).
+/// Paletas de cor do modo daltonismo (baseadas na Okabe-Ito)
 class PaletaAcessivel {
   PaletaAcessivel._();
 
-  /// Cores das 5 categorias fixas do app quando o modo daltonismo está
-  /// DESLIGADO (as cores originais, sempre usadas por padrão).
+  /// Cores padrão das categorias fixas
   static const Map<String, Color> categoriasFixasPadrao = {
     'Ações': Colors.orange,
     'Pessoas': Colors.blue,
@@ -19,7 +13,7 @@ class PaletaAcessivel {
     'Negação': Colors.red,
   };
 
-  /// Cores das 5 categorias fixas quando o modo daltonismo está LIGADO.
+  /// Cores das categorias fixas no modo daltonismo
   static const Map<String, Color> categoriasFixasDaltonismo = {
     'Ações': Color(0xFFE69F00), // laranja
     'Pessoas': Color(0xFF0072B2), // azul
@@ -28,8 +22,7 @@ class PaletaAcessivel {
     'Negação': Color(0xFFCC79A7), // roxo-avermelhado
   };
 
-  /// Paleta oferecida nos seletores de cor (nova categoria, novo
-  /// perfil) quando o modo daltonismo está LIGADO.
+  /// Cores dos seletores no modo daltonismo
   static const List<Color> seletorDaltonismo = [
     Color(0xFFE69F00), // laranja
     Color(0xFF0072B2), // azul

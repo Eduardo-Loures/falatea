@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:provider/provider.dart';
+import 'package:projeto/services/tts_service.dart';
+import 'package:projeto/widgets/avisos.dart';
 
 class EmocoesGame extends StatefulWidget {
   const EmocoesGame({super.key});
@@ -11,7 +13,7 @@ class EmocoesGame extends StatefulWidget {
 
 class _EmocoesGameState extends State<EmocoesGame>
     with SingleTickerProviderStateMixin {
-  final FlutterTts flutterTts = FlutterTts();
+  late final TtsService tts;
 
   late AnimationController _controller;
 
@@ -47,6 +49,8 @@ class _EmocoesGameState extends State<EmocoesGame>
   void initState() {
     super.initState();
 
+    tts = context.read<TtsService>();
+
     fasesEmbaralhadas = List.from(fases);
 
     fasesEmbaralhadas.shuffle(Random());
@@ -63,11 +67,7 @@ class _EmocoesGameState extends State<EmocoesGame>
   Future<void> falarEmocaoAtual() async {
     final emocao = fasesEmbaralhadas[faseAtual]['resposta'];
 
-    await flutterTts.setLanguage('pt-BR');
-
-    await flutterTts.setSpeechRate(0.45);
-
-    await flutterTts.speak(emocao);
+    await tts.falar(emocao);
   }
 
   void selecionarResposta(String respostaSelecionada) {
@@ -98,61 +98,17 @@ class _EmocoesGameState extends State<EmocoesGame>
     falarEmocaoAtual();
   }
 
-  void mostrarResultado(bool acertou) {
-    showDialog(
-      context: context,
+  Future<void> mostrarResultado(bool acertou) async {
+    await mostrarResultadoJogo(context, acertou: acertou);
 
-      barrierDismissible: false,
-
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-
-          title: Text(
-            acertou ? 'Muito bem! ⭐' : 'Ops 😅',
-
-            textAlign: TextAlign.center,
-          ),
-
-          content: Text(
-            acertou ? 'Você acertou' : 'Tente novamente.',
-
-            textAlign: TextAlign.center,
-          ),
-
-          actions: [
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-
-                  foregroundColor: Colors.white,
-                ),
-
-                onPressed: () {
-                  Navigator.pop(context);
-
-                  if (acertou) {
-                    proximaFase();
-                  }
-                },
-
-                child: const Text('Continuar'),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    if (acertou) proximaFase();
   }
 
   @override
   void dispose() {
     _controller.dispose();
 
-    flutterTts.stop();
+    tts.parar();
 
     super.dispose();
   }

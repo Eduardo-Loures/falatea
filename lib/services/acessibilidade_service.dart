@@ -1,13 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Guarda as preferências de acessibilidade visual do app.
-///
-/// Hoje controla apenas o "Modo daltonismo", que troca a paleta de
-/// cores das categorias fixas e dos seletores de cor (nova categoria,
-/// novo perfil) por uma paleta segura para protanopia, deuteranopia e
-/// tritanopia. Veja [PaletaAcessivel] em
-/// `lib/utils/paleta_acessivel.dart`.
+/// Preferências de acessibilidade (modo daltonismo)
 class AcessibilidadeService extends ChangeNotifier {
   static const _chaveModoDaltonismo = 'modo_daltonismo';
 

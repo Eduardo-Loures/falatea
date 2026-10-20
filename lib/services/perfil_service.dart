@@ -6,12 +6,7 @@ import 'dart:convert';
 import 'package:projeto/models/perfil_model.dart';
 import 'package:projeto/models/botao_aac_model.dart';
 
-/// Gerencia Perfis, Categorias e Botões do usuário.
-///
-/// Os dados ficam no Firestore (coleção `usuarios/{uid}`), sincronizados
-/// entre aparelhos. Quem ainda tem dados antigos salvos apenas no
-/// SharedPreferences (versões anteriores do app) tem esses dados migrados
-/// automaticamente para o Firestore no primeiro carregamento após o login.
+/// Gerencia Perfis, Categorias e Botões do usuário (Firestore)
 class PerfilService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -160,9 +155,7 @@ class PerfilService extends ChangeNotifier {
             final Map<String, dynamic> decoded = jsonDecode(botoesJson);
             decoded.forEach((categoria, listaJson) {
               botoesLocais[categoria] =
-                  (listaJson as List)
-                      .map((j) => BotaoAAC.fromJson(j))
-                      .toList();
+                  (listaJson as List).map((j) => BotaoAAC.fromJson(j)).toList();
             });
           }
 
@@ -178,9 +171,7 @@ class PerfilService extends ChangeNotifier {
               if (categoriasLocais.containsKey(nome))
                 'cor': categoriasLocais[nome]!.toARGB32(),
               'botoes':
-                  (botoesLocais[nome] ?? [])
-                      .map((b) => b.toJson())
-                      .toList(),
+                  (botoesLocais[nome] ?? []).map((b) => b.toJson()).toList(),
             }, SetOptions(merge: true));
           }
           await batch.commit();
@@ -231,7 +222,9 @@ class PerfilService extends ChangeNotifier {
       _botoesSalvos = {};
       notifyListeners();
 
-      debugPrint('Todos os dados do usuário $_userUid deletados permanentemente');
+      debugPrint(
+        'Todos os dados do usuário $_userUid deletados permanentemente',
+      );
     } catch (e) {
       debugPrint('Erro ao deletar dados: $e');
     }
@@ -300,8 +293,7 @@ class PerfilService extends ChangeNotifier {
   }
 
   Future<void> _excluirPerfilDoFirestore(String perfilId) async {
-    // Firestore não deleta subcoleções junto com o documento pai;
-    // é preciso apagar as categorias manualmente.
+    // Apaga as categorias manualmente (Firestore não apaga subcoleções)
     final categoriasSnap = await _categoriasCol(perfilId).get();
     final batch = _db.batch();
     for (final doc in categoriasSnap.docs) {
@@ -321,9 +313,7 @@ class PerfilService extends ChangeNotifier {
     );
 
     _perfilAtivo = perfil;
-    await _usuarioDoc.set({
-      'perfilAtivoId': perfilId,
-    }, SetOptions(merge: true));
+    await _usuarioDoc.set({'perfilAtivoId': perfilId}, SetOptions(merge: true));
 
     _categoriasSalvas = await carregarCategoriasPerfilAtivo();
     _botoesSalvos = await getBotoesPerfilAtivoAsync();
@@ -331,16 +321,13 @@ class PerfilService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // SALVAR BOTÕES PERSONALIZADOS (substitui todos os botões não-fixos
-  // de cada categoria do perfil ativo)
+  // SALVAR BOTÕES PERSONALIZADOS
   Future<void> salvarBotoesPerfilAtivo(
     Map<String, List<BotaoAAC>> botoes,
   ) async {
     if (_perfilAtivo == null || _userUid == null) return;
 
-    // Precisamos conhecer todas as categorias já existentes para zerar
-    // o campo `botoes` daquelas que não vieram no mapa (equivalente à
-    // substituição completa que existia no SharedPreferences).
+    // Zera os botões das categorias que não vieram no mapa
     final categoriasExistentes = await _categoriasCol(_perfilAtivo!.id).get();
     final nomesExistentes = categoriasExistentes.docs.map((d) => d.id).toSet();
     final nomes = {...nomesExistentes, ...botoes.keys};
@@ -394,9 +381,7 @@ class PerfilService extends ChangeNotifier {
     final batch = _db.batch();
     categorias.forEach((nome, cor) {
       final docRef = _categoriasCol(_perfilAtivo!.id).doc(nome);
-      batch.set(docRef, {
-        'cor': cor.toARGB32(),
-      }, SetOptions(merge: true));
+      batch.set(docRef, {'cor': cor.toARGB32()}, SetOptions(merge: true));
     });
     await batch.commit();
 

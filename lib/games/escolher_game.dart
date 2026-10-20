@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:provider/provider.dart';
+import 'package:projeto/services/tts_service.dart';
+import 'package:projeto/widgets/avisos.dart';
 
 class EscolherPictogramaGame extends StatefulWidget {
   const EscolherPictogramaGame({super.key});
@@ -65,11 +67,13 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
 
   late AnimationController _controller;
 
-  final FlutterTts flutterTts = FlutterTts();
+  late final TtsService tts;
 
   @override
   void initState() {
     super.initState();
+
+    tts = context.read<TtsService>();
 
     fasesEmbaralhadas = List.from(fases);
 
@@ -86,16 +90,13 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
   Future<void> falarPalavraAtual() async {
     final palavra = fasesEmbaralhadas[faseAtual]['resposta'];
 
-    await flutterTts.setLanguage('pt-BR');
-
-    await flutterTts.setSpeechRate(0.45);
-
-    await flutterTts.speak(palavra);
+    await tts.falar(palavra);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    tts.parar();
     super.dispose();
   }
 
@@ -127,49 +128,10 @@ class _EscolherPictogramaGameState extends State<EscolherPictogramaGame>
     falarPalavraAtual();
   }
 
-  void mostrarResultado(bool acertou) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+  Future<void> mostrarResultado(bool acertou) async {
+    await mostrarResultadoJogo(context, acertou: acertou);
 
-          title: Text(
-            acertou ? 'Muito bem! ⭐' : 'Ops 😅',
-            textAlign: TextAlign.center,
-          ),
-
-          content: Text(
-            acertou ? 'Você acertou' : 'Tente novamente.',
-            textAlign: TextAlign.center,
-          ),
-
-          actions: [
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  foregroundColor: Colors.white,
-                ),
-
-                onPressed: () {
-                  Navigator.pop(context);
-
-                  if (acertou) {
-                    proximaFase();
-                  }
-                },
-
-                child: const Text('Continuar'),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    if (acertou) proximaFase();
   }
 
   @override
