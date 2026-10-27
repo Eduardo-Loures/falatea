@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FalaTEA — Comunicação Alternativa para pessoas com TEA</title>
+  <meta name="description" content="FalaTEA é um aplicativo de Comunicação Aumentativa e Alternativa (CAA) que transforma pictogramas em fala para ajudar pessoas com Transtorno do Espectro Autista a se comunicarem.">
+  <meta property="og:title" content="FalaTEA">
+  <meta property="og:description" content="Aplicativo de Comunicação Aumentativa e Alternativa para pessoas com TEA.">
+  <meta property="og:image" content="img/logo.webp">
+  <meta name="theme-color" content="#3F51B5">
+  <link rel="icon" href="img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topo">
+    <div class="container topo-inner">
+      <a href="#inicio" class="marca">
+        <img src="img/logo-sm.webp" alt="" width="40" height="34">
+        <span>FalaTEA</span>
+      </a>
+      <button class="menu-btn" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="menu" class="menu">
+        <a href="#sobre">Sobre</a>
+        <a href="#experimente">Experimente</a>
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#jogos">Jogos</a>
+        <a href="#tecnologias">Tecnologias</a>
+        <a href="#equipe">Equipe</a>
+        <a href="https://github.com/Eduardo-Loures/falatea" class="btn btn-pequeno" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section id="inicio" class="hero">
+      <div class="container hero-inner">
+        <div class="hero-texto">
+          <span class="selo">Comunicação Aumentativa e Alternativa</span>
+          <h1>Cada toque vira <span class="destaque">uma voz</span>.</h1>
+          <p class="lead">
+            O FalaTEA é um aplicativo que ajuda pessoas com Transtorno do Espectro Autista (TEA)
+            a se comunicarem por meio de pictogramas que falam. Basta tocar nas imagens para montar
+            frases, e o app fala em voz alta.
+          </p>
+          <div class="acoes">
+            <a href="#experimente" class="btn">Experimentar agora</a>
+            <a href="https://github.com/Eduardo-Loures/falatea" class="btn btn-secundario" target="_blank" rel="noopener">Ver o código</a>
+          </div>
+        </div>
+        <div class="hero-imagem">
+          <img src="img/logo.webp" alt="Logo do FalaTEA: duas crianças sorrindo dentro de um balão de fala com pictogramas coloridos" width="640" height="548">
+        </div>
+      </div>
+    </section>
+
+    <!-- SOBRE -->
+    <section id="sobre" class="secao">
+      <div class="container">
+        <h2>Por que o FalaTEA?</h2>
+        <p class="secao-intro">
+          Muitas pessoas com TEA têm dificuldade com a fala oral. A Comunicação Aumentativa e
+          Alternativa (CAA) usa imagens e sons para que elas consigam expressar desejos,
+          necessidades e sentimentos. O FalaTEA leva isso para o celular de forma simples,
+          personalizável e gratuita.
+        </p>
+        <div class="passos">
+          <article class="passo">
+            <span class="passo-num" style="--c: var(--azul)">1</span>
+            <h3>Crie um perfil</h3>
+            <p>Cada criança tem seu próprio perfil, com nome, foto, cor e botões personalizados.</p>
+          </article>
+          <article class="passo">
+            <span class="passo-num" style="--c: var(--verde)">2</span>
+            <h3>Toque nos pictogramas</h3>
+            <p>As imagens ficam organizadas por categorias, como Ações, Pessoas, Objetos e Emoções.</p>
+          </article>
+          <article class="passo">
+            <span class="passo-num" style="--c: var(--laranja)">3</span>
+            <h3>O app fala por você</h3>
+            <p>A frase montada é falada em português do Brasil, com voz e velocidade ajustáveis.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO -->
+    <section id="experimente" class="secao secao-alt">
+      <div class="container">
+        <h2>Experimente a prancha</h2>
+        <p class="secao-intro">
+          Uma amostra de como funciona a grade de comunicação do app. Toque nos pictogramas para
+          montar uma frase e depois em <strong>Falar</strong>.
+        </p>
+
+        <div class="prancha" aria-label="Demonstração da prancha de comunicação">
+          <div class="frase">
+            <div class="frase-itens" aria-live="polite" aria-label="Frase montada">
+              <span class="frase-vazia">Toque nos pictogramas abaixo…</span>
+            </div>
+            <div class="frase-acoes">
+              <button class="btn-icone" data-acao="apagar" aria-label="Apagar último pictograma" title="Apagar último">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3H7c-.7 0-1.2.3-1.6.9L0 12l5.4 8.1c.4.5.9.9 1.6.9h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.6L17.6 17 14 13.4 10.4 17 9 15.6l3.6-3.6L9 8.4 10.4 7l3.6 3.6L17.6 7 19 8.4 15.4 12l3.6 3.6z"/></svg>
+              </button>
+              <button class="btn-icone" data-acao="limpar" aria-label="Limpar frase" title="Limpar tudo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              </button>
+              <button class="btn btn-falar" data-acao="falar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.8-1-3.3-2.5-4v8c1.5-.7 2.5-2.2 2.5-4zM14 3.2v2.1c2.9.9 5 3.5 5 6.7s-2.1 5.8-5 6.7v2.1c4-.9 7-4.5 7-8.8s-3-7.9-7-8.8z"/></svg>
+                Falar
+              </button>
+            </div>
+          </div>
+
+          <div class="abas" role="tablist" aria-label="Categorias"></div>
+          <div class="grade" role="tabpanel"></div>
+          <p class="aviso-voz" hidden>Seu navegador não tem síntese de voz, mas você ainda pode montar frases.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNCIONALIDADES -->
+    <section id="funcionalidades" class="secao">
+      <div class="container">
+        <h2>Funcionalidades</h2>
+        <p class="secao-intro">Feito para crianças, famílias e terapeutas usarem no dia a dia.</p>
+        <div class="cards">
+          <article class="card">
+            <div class="card-icone" style="--c: var(--azul)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13zm8 0c-.3 0-.6 0-1 .1 1.2.8 2 2 2 3.4V19h6v-2.5c0-2.3-4.7-3.5-7-3.5z"/></svg>
+            </div>
+            <h3>Vários perfis</h3>
+            <p>Uma conta pode ter vários perfis, cada um com seus próprios botões, categorias, foto e cor.</p>
+          </article>
+          <article class="card">
+            <div class="card-icone" style="--c: var(--laranja)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm13 0h2v3h3v2h-3v3h-2v-3h-3v-2h3v-3z"/></svg>
+            </div>
+            <h3>Prancha personalizável</h3>
+            <p>Crie categorias e botões com texto, ícone ou uma foto da galeria, como o brinquedo favorito ou alguém da família.</p>
+          </article>
+          <article class="card">
+            <div class="card-icone" style="--c: var(--verde)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.8-1-3.3-2.5-4v8c1.5-.7 2.5-2.2 2.5-4zM14 3.2v2.1c2.9.9 5 3.5 5 6.7s-2.1 5.8-5 6.7v2.1c4-.9 7-4.5 7-8.8s-3-7.9-7-8.8z"/></svg>
+            </div>
+            <h3>Síntese de voz</h3>
+            <p>Fala em português do Brasil, com voz masculina ou feminina e ajuste de velocidade e tom.</p>
+          </article>
+          <article class="card">
+            <div class="card-icone" style="--c: var(--rosa)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5c-1.7-4.4-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+            </div>
+            <h3>Modo daltonismo</h3>
+            <p>Uma paleta de cores acessível para que todos consigam diferenciar as categorias e os jogos.</p>
+          </article>
+          <article class="card">
+            <div class="card-icone" style="--c: var(--ciano)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 10A7.5 7.5 0 0 0 5.3 8 6 6 0 0 0 6 20h13a5 5 0 0 0 .4-10z"/></svg>
+            </div>
+            <h3>Salvo na nuvem</h3>
+            <p>Perfis, categorias e botões ficam salvos no Firebase, e as fotos no Cloudinary. Nada se perde ao trocar de celular.</p>
+          </article>
+          <article class="card">
+            <div class="card-icone" style="--c: var(--roxo)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 1H7C5.9 1 5 1.9 5 3v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/></svg>
+            </div>
+            <h3>Retrato e paisagem</h3>
+            <p>A grade de botões se adapta automaticamente à orientação do aparelho.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOGOS -->
+    <section id="jogos" class="secao secao-alt">
+      <div class="container">
+        <h2>Jogos educativos</h2>
+        <p class="secao-intro">
+          Atividades curtas e visuais que reforçam vocabulário, emoções e rotinas, com estrelas
+          como recompensa e uma ajuda quando a criança precisa.
+        </p>
+        <div class="jogos">
+          <article class="jogo">
+            <img src="img/jogos/escolher.webp" alt="" width="360" height="314" loading="lazy">
+            <h3>Qual é?</h3>
+            <p>Associe uma foto real ao pictograma correspondente.</p>
+          </article>
+          <article class="jogo">
+            <img src="img/jogos/emocoes.webp" alt="" width="360" height="314" loading="lazy">
+            <h3>Emoções</h3>
+            <p>Reconheça expressões: feliz, triste, bravo e cansado.</p>
+          </article>
+          <article class="jogo">
+            <img src="img/jogos/cores.webp" alt="" width="360" height="314" loading="lazy">
+            <h3>Cores</h3>
+            <p>Associe cada cor ao seu nome, ouvindo a palavra falada.</p>
+          </article>
+          <article class="jogo">
+            <img src="img/jogos/rotina.webp" alt="" width="360" height="314" loading="lazy">
+            <h3>Minha Rotina</h3>
+            <p>Coloque em ordem os passos do dia a dia, como escovar os dentes ou tomar banho.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECNOLOGIAS -->
+    <section id="tecnologias" class="secao">
+      <div class="container tec-inner">
+        <div>
+          <h2>Tecnologias</h2>
+          <p class="secao-intro">
+            Desenvolvido em Flutter para Android, com backend serverless no Firebase.
+          </p>
+          <ul class="chips">
+            <li>Flutter</li>
+            <li>Dart</li>
+            <li>Firebase Auth</li>
+            <li>Cloud Firestore</li>
+            <li>Cloudinary</li>
+            <li>Provider</li>
+            <li>flutter_tts</li>
+            <li>image_picker</li>
+          </ul>
+        </div>
+        <div class="projeto-card">
+          <img src="img/logo-sm.webp" alt="" width="72" height="62">
+          <h3>Projeto acadêmico</h3>
+          <p>
+            O FalaTEA foi desenvolvido pelo <strong>Grupo FalaTEA</strong> como projeto do curso de
+            <strong>Engenharia de Computação</strong> (10º semestre).
+          </p>
+          <a href="https://github.com/Eduardo-Loures/falatea" class="btn" target="_blank" rel="noopener">Repositório no GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- EQUIPE -->
+    <section id="equipe" class="secao secao-alt">
+      <div class="container">
+        <h2>Equipe</h2>
+        <p class="secao-intro">Grupo FalaTEA · Engenharia de Computação, 10º semestre.</p>
+        <ul class="equipe">
+          <li class="membro">
+            <span class="avatar" style="--c: var(--azul)" aria-hidden="true">EL</span>
+            <span class="membro-nome">Eduardo Henrique Piellusch Loures</span>
+          </li>
+          <li class="membro">
+            <span class="avatar" style="--c: var(--verde)" aria-hidden="true">FM</span>
+            <span class="membro-nome">Fábio Machado de Moraes</span>
+          </li>
+          <li class="membro">
+            <span class="avatar" style="--c: var(--laranja)" aria-hidden="true">PL</span>
+            <span class="membro-nome">Polyana Pachel Lavrador</span>
+          </li>
+          <li class="membro">
+            <span class="avatar" style="--c: var(--vermelho)" aria-hidden="true">VD</span>
+            <span class="membro-nome">Vinicius Fernandes Dutra</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="rodape">
+    <div class="container">
+      <p>
+        <strong>FalaTEA</strong> · Comunicação Aumentativa e Alternativa para pessoas com TEA ·
+        <a href="https://github.com/Eduardo-Loures/falatea" target="_blank" rel="noopener">GitHub</a>
+      </p>
+      <p class="creditos">
+        Pictogramas: Sergio Palao. Origem: <a href="https://arasaac.org" target="_blank" rel="noopener">ARASAAC</a>.
+        Licença: CC BY-NC-SA. Propriedade: Governo de Aragão (Espanha).
+      </p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
