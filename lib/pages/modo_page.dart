@@ -141,21 +141,21 @@ class ModoPage extends StatelessWidget {
       child: Container(
         width: double.infinity,
 
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(22),
 
         decoration: BoxDecoration(
           color: Colors.white,
 
           borderRadius: BorderRadius.circular(24),
 
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
         ),
 
         child: Row(
           children: [
             SizedBox(
-              height: 100,
-              width: 100,
+              height: 90,
+              width: 90,
 
               child: Image.asset(imagem, fit: BoxFit.contain),
             ),
@@ -171,7 +171,7 @@ class ModoPage extends StatelessWidget {
                     titulo,
 
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -186,6 +186,8 @@ class ModoPage extends StatelessWidget {
                 ],
               ),
             ),
+
+            Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[500]),
           ],
         ),
       ),
